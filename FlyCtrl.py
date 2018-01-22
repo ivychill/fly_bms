@@ -4,9 +4,10 @@
 import math,thread,time
 import threading
 import json,sys
-import LockonInterface
+import BmsInterface
 import random
-import my_config
+from my_config import *
+
 jiasu =0
 
 # 相关参数获取
@@ -15,61 +16,61 @@ jiasu =0
 #敌机时间参数
 def get_datatime():
     ssss=""
-    LockonInterface.srvlock1.acquire()
-    ssss= LockonInterface.datatime
-    LockonInterface.srvlock1.release()
+    BmsInterface.srvlock.acquire()
+    ssss= BmsInterface.datatime
+    BmsInterface.srvlock.release()
 
     return ssss
 
 #我机角度参数pitch，bank(roll),yaw
 def parsejson_pitch():
-    LockonInterface.srvlock.acquire()
-    if len(LockonInterface.datalist)>0:
+    BmsInterface.srvlock.acquire()
+    if len(BmsInterface.datalist)>0:
         try:
-            obj = json.loads(LockonInterface.datalist[0])
-            LockonInterface.srvlock.release()
+            obj = json.loads(BmsInterface.datalist[0])
+            BmsInterface.srvlock.release()
             return obj['pitch']
         except ZeroDivisionError,e:
-            LockonInterface.srvlock.release()
-    LockonInterface.srvlock.release()
+            BmsInterface.srvlock.release()
+    BmsInterface.srvlock.release()
     return -100
 
 def parsejson_bank():
-    LockonInterface.srvlock.acquire()
-    if len(LockonInterface.datalist)>0:
+    BmsInterface.srvlock.acquire()
+    if len(BmsInterface.datalist)>0:
         try:
-            obj = json.loads(LockonInterface.datalist[0])
-            LockonInterface.srvlock.release()
+            obj = json.loads(BmsInterface.datalist[0])
+            BmsInterface.srvlock.release()
             return obj['roll']
         except ZeroDivisionError,e:
-            LockonInterface.srvlock.release()
-    LockonInterface.srvlock.release()
+            BmsInterface.srvlock.release()
+    BmsInterface.srvlock.release()
 
     return -100
 
 def parsejson_yaw():
-    LockonInterface.srvlock.acquire()
-    if len(LockonInterface.datalist)>0:
+    BmsInterface.srvlock.acquire()
+    if len(BmsInterface.datalist)>0:
         try:
-            obj = json.loads(LockonInterface.datalist[0])
-            LockonInterface.srvlock.release()
+            obj = json.loads(BmsInterface.datalist[0])
+            BmsInterface.srvlock.release()
             return obj['yaw']
         except ZeroDivisionError,e:
-            LockonInterface.srvlock.release()
-    LockonInterface.srvlock.release()
+            BmsInterface.srvlock.release()
+    BmsInterface.srvlock.release()
     return -100
 
 
 def parsejson_alpha():
-    LockonInterface.srvlock.acquire()
-    if len(LockonInterface.datalist)>0:
+    BmsInterface.srvlock.acquire()
+    if len(BmsInterface.datalist)>0:
         try:
-            obj = json.loads(LockonInterface.datalist[0])
-            LockonInterface.srvlock.release()
+            obj = json.loads(BmsInterface.datalist[0])
+            BmsInterface.srvlock.release()
             return obj['alpha']/180*math.pi
         except ZeroDivisionError,e:
-            LockonInterface.srvlock.release()
-    LockonInterface.srvlock.release()
+            BmsInterface.srvlock.release()
+    BmsInterface.srvlock.release()
     return -100
 
 #速度矢量符位置
@@ -79,179 +80,178 @@ def speed_vector():
 
 #获取海拔高度
 def parsejson_altBar():
-    LockonInterface.srvlock.acquire()
-    if len(LockonInterface.datalist)>0:
+    BmsInterface.srvlock.acquire()
+    if len(BmsInterface.datalist)>0:
         try:
-            obj = json.loads(LockonInterface.datalist[0])
-            LockonInterface.srvlock.release()
+            obj = json.loads(BmsInterface.datalist[0])
+            BmsInterface.srvlock.release()
             return obj['altBar']
         except ZeroDivisionError,e:
-            LockonInterface.srvlock.release()
-    LockonInterface.srvlock.release()
+            BmsInterface.srvlock.release()
+    BmsInterface.srvlock.release()
     return -100
 
 #获取地面高度
 def parsejson_altRad():
-    LockonInterface.srvlock.acquire()
-    if len(LockonInterface.datalist)>0:
+    BmsInterface.srvlock.acquire()
+    if len(BmsInterface.datalist)>0:
         try:
-            obj = json.loads(LockonInterface.datalist[0])
-            LockonInterface.srvlock.release()
+            obj = json.loads(BmsInterface.datalist[0])
+            BmsInterface.srvlock.release()
             return -obj['z']
         except ZeroDivisionError,e:
-            LockonInterface.srvlock.release()
-    LockonInterface.srvlock.release()
+            BmsInterface.srvlock.release()
+    BmsInterface.srvlock.release()
     return -100
 
 #获取速度
 def parsejson_speed():
-    LockonInterface.srvlock.acquire()
-    if len(LockonInterface.datalist)>0:
+    BmsInterface.srvlock.acquire()
+    if len(BmsInterface.datalist)>0:
         try:
-            obj = json.loads(LockonInterface.datalist[0])
-            LockonInterface.srvlock.release()
+            obj = json.loads(BmsInterface.datalist[0])
+            BmsInterface.srvlock.release()
             return obj['kias']
         except ZeroDivisionError,e:
-            LockonInterface.srvlock.release()
-    LockonInterface.srvlock.release()
+            BmsInterface.srvlock.release()
+    BmsInterface.srvlock.release()
 
     return -100
 
 #获取扫描（视觉系统）信息
 def parsejson_targetscan():
-    LockonInterface.srvlock.acquire()
-    if len(LockonInterface.datalist)>0:
+    BmsInterface.srvlock.acquire()
+    if len(BmsInterface.datalist)>0:
         try:
-            obj = json.loads(LockonInterface.datalist[12])
-            LockonInterface.srvlock.release()
+            obj = json.loads(BmsInterface.datalist[12])
+            BmsInterface.srvlock.release()
             return obj
         except ZeroDivisionError,e:
-            LockonInterface.srvlock.release()
-    LockonInterface.srvlock.release()
+            BmsInterface.srvlock.release()
+    BmsInterface.srvlock.release()
 
     return None
 
 #获取预警敌机信息
 def parsejson_enermy():
-    LockonInterface.srvlock.acquire()
-    if len(LockonInterface.datalist)>0:
+    BmsInterface.srvlock.acquire()
+    if len(BmsInterface.datalist)>0:
         try:
-            obj = json.loads(LockonInterface.datalist[13])
-            LockonInterface.srvlock.release()
+            obj = json.loads(BmsInterface.datalist[13])
+            BmsInterface.srvlock.release()
             if obj is not None:
                 lenth=len(obj)
                 if lenth>1:
                     return obj["Emitters"]
         except ZeroDivisionError,e:
-            LockonInterface.srvlock.release()
-    LockonInterface.srvlock.release()
+            BmsInterface.srvlock.release()
+    BmsInterface.srvlock.release()
     return None
 
 #获取详细敌机信息
 def parsejson_enermy_detail():
-    LockonInterface.srvlock.acquire()
-    if len(LockonInterface.datalist)>0:
+    BmsInterface.srvlock.acquire()
+    if len(BmsInterface.datalist)>0:
         try:
-            obj = json.loads(LockonInterface.datalist[14])
+            obj = json.loads(BmsInterface.datalist[14])
             if obj is not None:
-                LockonInterface.srvlock.release()
+                BmsInterface.srvlock.release()
                 return obj
         except ZeroDivisionError,e:
-            LockonInterface.srvlock.release()
+            BmsInterface.srvlock.release()
             return None
-    LockonInterface.srvlock.release()
+    BmsInterface.srvlock.release()
     return None
 
 #获取目标信息
 def parsejson_target():
-    LockonInterface.srvlock.acquire()
-    if len(LockonInterface.datalist)>0:
+    BmsInterface.srvlock.acquire()
+    if len(BmsInterface.datalist)>0:
         try:
-            obj = json.loads(LockonInterface.datalist[10])
+            obj = json.loads(BmsInterface.datalist[10])
 
             if obj is not None:
-                LockonInterface.srvlock.release()
+                BmsInterface.srvlock.release()
                 return obj
         except ZeroDivisionError,e:
-            LockonInterface.srvlock.release()
+            BmsInterface.srvlock.release()
             return None
-    LockonInterface.srvlock.release()
+    BmsInterface.srvlock.release()
     return None
 
 #获取已锁定目标信息
 def parsejson_lockedtarget():
-    LockonInterface.srvlock.acquire()
-    if len(LockonInterface.datalist)>0:
+    BmsInterface.srvlock.acquire()
+    if len(BmsInterface.datalist)>0:
         try:
-            obj = json.loads(LockonInterface.datalist[11])
+            obj = json.loads(BmsInterface.datalist[11])
             if obj is not None:
-                LockonInterface.srvlock.release()
+                BmsInterface.srvlock.release()
                 return obj
         except ZeroDivisionError,e:
-            LockonInterface.srvlock.release()
+            BmsInterface.srvlock.release()
             return None
-    LockonInterface.srvlock.release()
+    BmsInterface.srvlock.release()
     return None
 
 #获取我机信息
 def parsejson_selfinfor():
-    LockonInterface.srvlock.acquire()
-    if len(LockonInterface.datalist)>0:
+    BmsInterface.srvlock.acquire()
+    if len(BmsInterface.datalist)>0:
         try:
-            obj = json.loads(LockonInterface.datalist[8])
+            obj = json.loads(BmsInterface.datalist[8])
             if obj is not None:
-                LockonInterface.srvlock.release()
+                BmsInterface.srvlock.release()
                 return obj
         except ZeroDivisionError,e:
-            LockonInterface.srvlock.release()
+            BmsInterface.srvlock.release()
             return None
-    LockonInterface.srvlock.release()
+    BmsInterface.srvlock.release()
     return None
 
 
 def parsejson_G():
-    LockonInterface.srvlock.acquire()
-    if len(LockonInterface.datalist)>0:
+    BmsInterface.srvlock.acquire()
+    if len(BmsInterface.datalist)>0:
         try:
-            obj = json.loads(LockonInterface.datalist[2])
+            obj = json.loads(BmsInterface.datalist[2])
             if obj is not None:
-                LockonInterface.srvlock.release()
+                BmsInterface.srvlock.release()
                 return obj
         except ZeroDivisionError,e:
-            LockonInterface.srvlock.release()
+            BmsInterface.srvlock.release()
             return None
-        LockonInterface.srvlock.release()
+        BmsInterface.srvlock.release()
     return None
 
 #获取挂载信息
 def parsejson_loadinfor():
-    LockonInterface.srvlock.acquire()
-    if len(LockonInterface.datalist)>0:
+    BmsInterface.srvlock.acquire()
+    if len(BmsInterface.datalist)>0:
         try:
-            obj = json.loads(LockonInterface.datalist[15])
+            obj = json.loads(BmsInterface.datalist[15])
             if obj is not None:
-                LockonInterface.srvlock.release()
+                BmsInterface.srvlock.release()
                 return obj
         except ZeroDivisionError,e:
-            LockonInterface.srvlock.release()
+            BmsInterface.srvlock.release()
             return None
-    LockonInterface.srvlock.release()
+    BmsInterface.srvlock.release()
     return None
 
 # def parsejson_enemyid():
-#     LockonInterface.srvlock.acquire()
-#     if len(LockonInterface.datalist)>0:
+#     BmsInterface.srvlock.acquire()
+#     if len(BmsInterface.datalist)>0:
 #         try:
-#             obj = json.loads(LockonInterface.datalist[17])
+#             obj = json.loads(BmsInterface.datalist[17])
 #             if obj is not None:
-#                 LockonInterface.srvlock.release()
+#                 BmsInterface.srvlock.release()
 #                 return obj
 #         except ZeroDivisionError,e:
-#             LockonInterface.srvlock.release()
+#             BmsInterface.srvlock.release()
 #             return None
-#     LockonInterface.srvlock.release()
+#     BmsInterface.srvlock.release()
 #     return None
-
 
 
 #飞行姿态控制，pitch，roll
@@ -284,7 +284,7 @@ def keep_roll(roll):
             Ki1 = 0.00000
             Kd1 = 0.25
             command2 = "y" + ":" + str(32767 * (0.215 * (abs(roll) + 0.03) + 1) / 2)
-            LockonInterface.sendto(command2)
+            bms_interface.sendto(command2)
         #可用参数
         # Kp1 = 0.581
         # Ki1 = 0.00000
@@ -310,22 +310,18 @@ def keep_roll(roll):
         if a > 1:
             a = 1
 
-        my_config.logger.info('PID：a = %s * e + %s* e_roll_sum + %s* (delta_e)' % (Kp1, Ki1, Kd1))
-        my_config.logger.debug('比例:%s' % e)
-        my_config.logger.debug('积分:%s' % e_roll_sum)
-        my_config.logger.debug('微分:%s' % delta_e)
-        my_config.logger.debug('speed:%s' % parsejson_speed())
-        my_config.logger.debug('roll:%s' % parsejson_bank())
+        logger.info('PID：a = %s * e + %s* e_roll_sum + %s* (delta_e)' % (Kp1, Ki1, Kd1))
+        logger.debug('比例:%s' % e)
+        logger.debug('积分:%s' % e_roll_sum)
+        logger.debug('微分:%s' % delta_e)
+        logger.debug('speed:%s' % parsejson_speed())
+        logger.debug('roll:%s' % parsejson_bank())
 
         command1 = "x" + ":" + str(32767*(a+1)/2)
-        LockonInterface.sendto(command1)
+        bms_interface.sendto(command1)
+
         t_roll = time.time()
-        e_roll_last=e
-
-
-
-
-
+        e_roll_last = e
 
 
 t_va=time.time()
@@ -350,7 +346,7 @@ def keep_speed_vector(va):
         if a > 1:
             a = 1
         command = "y" + ":" + str(32767*(a+1)/2)
-        LockonInterface.sendto(command)
+        bms_interface.sendto(command)
         t_va=time.time()
         e_va_last = e
 
@@ -374,7 +370,7 @@ def keep_pitch(pitch):
         if a > 1:
             a = 1
         command = "2001" + "," + str(a)
-        LockonInterface.sendto(command)
+        bms_interface.sendto(command)
         t_pitch=time.time()
         e_pitch_last = e
 
@@ -407,10 +403,10 @@ jiali=0
 def speedup(speed):
     global jiali
     if parsejson_speed() < speed-10 and jiali==0:
-        LockonInterface.sendto("z:0")
+        bms_interface.sendto("z:0")
         jiali=1
     if parsejson_speed() > speed and jiali==1:
-        LockonInterface.sendto("z:16537")
+        bms_interface.sendto("z:16537")
         jiali=0
 
 
@@ -455,7 +451,7 @@ def keep_yaw_Va(yaw,Va):
 #盘旋
 def spiral(roll,Va):
 
-    LockonInterface.sendto("z:0")
+    bms_interface.sendto("z:0")
     keep_roll(roll)
     keep_speed_vector(Va)
 
@@ -469,8 +465,8 @@ def scan_and_lock():
     global t_commandx,t_commandy,move_x,move_y,t_suoding
     if parsejson_targetscan()["radar_on"] == False:
         print "开雷达"
-        LockonInterface.sendto("106")
-        LockonInterface.sendto("86")
+        bms_interface.sendto("106")
+        bms_interface.sendto("86")
         time.sleep(0.2)
 
     a = parsejson_target()
@@ -517,26 +513,26 @@ def scan_and_lock():
 
         if abs(enermy_angle-x_position)> 0.2:
             if (enermy_angle - x_position) > 0:
-                LockonInterface.sendto("89")
+                bms_interface.sendto("89")
             else:
-                LockonInterface.sendto("88")
+                bms_interface.sendto("88")
         else:
             if (enermy_angle - x_position) > 0:
                 if (time.time() - t_commandx) > 0.02:
                     if move_x == 0:
-                        LockonInterface.sendto("89")
+                        bms_interface.sendto("89")
                         move_x = 1
                     if move_x == 1:
-                        LockonInterface.sendto("235")
+                        bms_interface.sendto("235")
                         move_x = 0
                     t_commandx= time.time()
             else:
                 if (time.time() - t_commandx) > 0.02:
                     if move_x == 0:
-                        LockonInterface.sendto("88")
+                        bms_interface.sendto("88")
                         move_x = 1
                     if move_x == 1:
-                        LockonInterface.sendto("235")
+                        bms_interface.sendto("235")
                         move_x = 0
                     t_commandx = time.time()
 
@@ -544,35 +540,55 @@ def scan_and_lock():
 
         if abs(enermy_dis-y_position)>0.2:
             if (enermy_dis - y_position) > 0:
-                LockonInterface.sendto("90")
+                bms_interface.sendto("90")
             else:
-                LockonInterface.sendto("91")
+                bms_interface.sendto("91")
         else:
             if (enermy_dis - y_position) > 0:
                 if (time.time() - t_commandy) > 0.02:
                     if move_y == 0:
-                        LockonInterface.sendto("90")
+                        bms_interface.sendto("90")
                         move_y = 1
                     if move_y == 1:
-                        LockonInterface.sendto("235")
+                        bms_interface.sendto("235")
                         move_y = 0
                     t_commandy = time.time()
             if (enermy_dis - y_position) <= 0:
                 if (time.time() - t_commandy) > 0.02:
                     if move_y == 0:
-                        LockonInterface.sendto("91")
+                        bms_interface.sendto("91")
                         move_y = 1
                     if move_y == 1:
-                        LockonInterface.sendto("235")
+                        bms_interface.sendto("235")
                         move_y = 0
                     t_commandy = time.time()
 
         if abs(enermy_angle - x_position) < 0.1 and (time.time()-t_suoding)>0.2:
             # print '锁定'
-            LockonInterface.sendto("100")
-            LockonInterface.sendto("235")
+            bms_interface.sendto("100")
+            bms_interface.sendto("235")
             t_suoding=time.time()
 
+# add 2018-01-22
+event_start = threading.Event()
+event_stop = threading.Event()
+
+def start():
+    logger.info("send bms ctrl cmd start...")
+    bms_interface.send_ctrl_cmd('1')
+    logger.info("bms started...")
+    event_start.set()
+
+def stop():
+    event_stop.set()
+    logger.info("send bms ctrl cmd stop...")
+    bms_interface.send_ctrl_cmd('2')
+    logger.info("bms stopped...")
+
+def reboot():
+    logger.info("send bms ctrl cmd reboot...")
+    bms_interface.send_ctrl_cmd('3')
+    logger.info("bms rebooted...")
 
 # flag_entrance = False
 flag_break = False
@@ -594,7 +610,7 @@ def get_flag_entrance():
 def down(t):
     # global jiali
     # if jiali == 0:
-    #     LockonInterface.sendto("2004,-1")
+    #     bms_interface.sendto("2004,-1")
     #     jiali = 1
     # if parsejson_targetscan()["radar_on"] == True:
     #     print "关雷达"
@@ -607,12 +623,12 @@ def down(t):
     t_ganrao = time.time()
 
     t_duodaodan = time.time()
-    LockonInterface.sendto("y:25000")
+    bms_interface.sendto("y:25000")
 
     while (time.time() - t_duodaodan) < 3:
         speedup(430)
         if (time.time() - t_ganrao) > 1:
-            # LockonInterface.sendto("358")
+            # bms_interface.sendto("358")
             t_ganrao = time.time()
             # print "半筋斗翻转"
         keep_roll(-math.pi)
@@ -622,14 +638,14 @@ def down(t):
     while (time.time() - t_duodaodan) < 3:
         speedup(430)
         if (time.time() - t_ganrao) > 1:
-            # LockonInterface.sendto("358")
+            # bms_interface.sendto("358")
             t_ganrao = time.time()
             # print "半筋斗翻转"
         # time.sleep(0.05)
     while parsejson_pitch() < 0:
         speedup(430)
         if (time.time() - t_ganrao) > 1:
-            # LockonInterface.sendto("358")
+            # bms_interface.sendto("358")
             t_ganrao = time.time()
             # print "半筋斗翻转"
         # time.sleep(0.05)
@@ -644,38 +660,38 @@ def down(t):
         # keep_altrad(5000)
         # time.sleep(0.05)
         if (time.time() - t_ganrao) > 1:
-            # LockonInterface.sendto("358")
+            # bms_interface.sendto("358")
             t_ganrao = time.time()
             # print "下降到高度1500米"
 
 def up(t):
     # global jiali
     # if jiali == 0:
-    #     LockonInterface.sendto("2004,-1")
+    #     bms_interface.sendto("2004,-1")
     #     jiali = 1
     if parsejson_targetscan()["radar_on"] == True:
         print "关雷达"
-        LockonInterface.sendto("106")
-        LockonInterface.sendto("86")
+        bms_interface.sendto("106")
+        bms_interface.sendto("86")
         time.sleep(0.2)
 
-    LockonInterface.sendto("358")
+    bms_interface.sendto("358")
     t_ganrao = time.time()
 
     t_duodaodan = time.time()
-    LockonInterface.sendto("2001,0.3")
+    bms_interface.sendto("2001,0.3")
     while (time.time() - t_duodaodan) < 2:
         speedup(250)
         keep_roll(0)
         if (time.time() - t_ganrao) > 1:
-            LockonInterface.sendto("358")
+            bms_interface.sendto("358")
             t_ganrao = time.time()
             print "向上翻转"
         time.sleep(0.05)
     while parsejson_pitch() > 0.1:
         speedup(250)
         if (time.time() - t_ganrao) > 1:
-            LockonInterface.sendto("358")
+            bms_interface.sendto("358")
             t_ganrao = time.time()
             print "向上翻转"
         time.sleep(0.05)
@@ -685,8 +701,8 @@ def up(t):
 
     if parsejson_targetscan()["radar_on"] == False:
         print "开雷达"
-        LockonInterface.sendto("106")
-        LockonInterface.sendto("86")
+        bms_interface.sendto("106")
+        bms_interface.sendto("86")
         time.sleep(0.2)
 
     while (time.time() - t_duodaodan) < t:
@@ -695,7 +711,7 @@ def up(t):
         keep_pitch(0)
         time.sleep(0.05)
         if (time.time() - t_ganrao) > 1:
-            LockonInterface.sendto("358")
+            bms_interface.sendto("358")
             t_ganrao = time.time()
             print "转平"
 
@@ -703,22 +719,23 @@ def s_left(flag_break):
     # global jiali,flag_entrance
     # global jiali
     # if jiali == 0:
-    #     LockonInterface.sendto("2004,-1")
+    #     bms_interface.sendto("2004,-1")
     #     jiali = 1
     # if parsejson_targetscan()["radar_on"] == True:
     #     print "关雷达"
-    #     LockonInterface.sendto("106")
-    #     LockonInterface.sendto("86")
+    #     bms_interface.sendto("106")
+    #     bms_interface.sendto("86")
     #     time.sleep(0.2)
     speedup(430)
     time.sleep(10)
+
     t_duodaodan = time.time()
     t_ganrao =time.time()
 
     while (time.time() - t_duodaodan) < 20:
         speedup(430)
         if (time.time() - t_ganrao) > 1:
-            # LockonInterface.sendto("358")
+            # bms_interface.sendto("358")
             t_ganrao = time.time()
             # print "左转"
         keep_roll(-80*math.pi/180)
@@ -731,7 +748,7 @@ def s_left(flag_break):
     while (time.time() - t_duodaodan) < 1:
         speedup(430)
         if (time.time() - t_ganrao) > 1:
-            # LockonInterface.sendto("358")
+            # bms_interface.sendto("358")
             t_ganrao = time.time()
 
         keep_roll(0)
@@ -748,7 +765,7 @@ def s_left(flag_break):
     while (time.time() - t_duodaodan) < 20:
         speedup(430)
         if (time.time() - t_ganrao) > 1:
-            # LockonInterface.sendto("358")
+            # bms_interface.sendto("358")
             t_ganrao = time.time()
 
         keep_roll(0)
@@ -760,22 +777,22 @@ def s_right(flag_break):
     # global jiali,flag_entrance
     # global jiali
     # if jiali == 0:
-    #     LockonInterface.sendto("2004,-1")
+    #     bms_interface.sendto("2004,-1")
     #     jiali = 1
     # if parsejson_targetscan()["radar_on"] == True:
     #     print "关雷达"
-    #     LockonInterface.sendto("106")
-    #     LockonInterface.sendto("86")
+    #     bms_interface.sendto("106")
+    #     bms_interface.sendto("86")
     #     time.sleep(0.2)
     speedup(430)
-    # LockonInterface.sendto("z:0")
+    # bms_interface.sendto("z:0")
     t_duodaodan = time.time()
     t_ganrao =time.time()
 
     while (time.time() - t_duodaodan) < 10:
         speedup(430)
         if (time.time() - t_ganrao) > 1:
-            # LockonInterface.sendto("358")
+            # bms_interface.sendto("358")
             t_ganrao = time.time()
             # print "右转"
         keep_roll(80 * math.pi / 180)
@@ -787,7 +804,7 @@ def s_right(flag_break):
     while (time.time() - t_duodaodan) < 1:
         speedup(430)
         if (time.time() - t_ganrao) > 1:
-            # LockonInterface.sendto("358")
+            # bms_interface.sendto("358")
             t_ganrao = time.time()
 
         keep_roll(0)
@@ -803,7 +820,7 @@ def s_right(flag_break):
     while (time.time() - t_duodaodan) < 20:
         speedup(430)
         if (time.time() - t_ganrao) > 1:
-            # LockonInterface.sendto("358")
+            # bms_interface.sendto("358")
             t_ganrao = time.time()
             # print "下降到高度1500米"
         keep_roll(0)
@@ -853,18 +870,18 @@ def off_set(yaw,va):
         keep_speed_vector(va)
         # time.sleep(0.05)
     print "发弹"
-    # LockonInterface.sendto("350")
+    # bms_interface.sendto("350")
     # time.sleep(1)
 
 def turn_to_angle1(angle,t):
     # global jiali
     # if jiali == 0:
-    #     LockonInterface.sendto("2004,-1")
+    #     bms_interface.sendto("2004,-1")
     #     jiali = 1
     if parsejson_targetscan()["radar_on"] == True:
         print "关雷达"
-        LockonInterface.sendto("106")
-        LockonInterface.sendto("86")
+        bms_interface.sendto("106")
+        bms_interface.sendto("86")
         time.sleep(0.2)
 
     t_duodaodan = time.time()
@@ -873,7 +890,7 @@ def turn_to_angle1(angle,t):
     while (time.time() - t_duodaodan) < 25:
         speedup(250)
         if (time.time() - t_ganrao) > 1:
-            LockonInterface.sendto("358")
+            bms_interface.sendto("358")
             t_ganrao = time.time()
             # print "左转"
         keep_yaw_Va(angle,0)
@@ -883,7 +900,7 @@ def turn_to_angle1(angle,t):
     while (time.time() - t_duodaodan) < t:
         speedup(250)
         if (time.time() - t_ganrao) > 1:
-            LockonInterface.sendto("358")
+            bms_interface.sendto("358")
             t_ganrao = time.time()
             # print "下降到高度1500米"
         keep_roll(0)
@@ -894,12 +911,12 @@ def turn_to_angle2(angle,flag_break):
     # global jiali,flag_entrance
     # global jiali
     # if jiali == 0:
-    #     LockonInterface.sendto("2004,-1")
+    #     bms_interface.sendto("2004,-1")
     #     jiali = 1
     if parsejson_targetscan()["radar_on"] == True:
         print "关雷达"
-        LockonInterface.sendto("106")
-        LockonInterface.sendto("86")
+        bms_interface.sendto("106")
+        bms_interface.sendto("86")
         time.sleep(0.2)
 
     t_duodaodan = time.time()
@@ -908,7 +925,7 @@ def turn_to_angle2(angle,flag_break):
     while (time.time() - t_duodaodan) < 25:
         speedup(250)
         if (time.time() - t_ganrao) > 1:
-            LockonInterface.sendto("358")
+            bms_interface.sendto("358")
             t_ganrao = time.time()
             # print "左转"
         keep_yaw_Va(angle,0)
@@ -919,7 +936,7 @@ def turn_to_angle2(angle,flag_break):
     while (time.time() - t_duodaodan) < 1:
         speedup(250)
         if (time.time() - t_ganrao) > 1:
-            LockonInterface.sendto("358")
+            bms_interface.sendto("358")
             t_ganrao = time.time()
 
         keep_roll(0)
@@ -934,7 +951,7 @@ def turn_to_angle2(angle,flag_break):
     while not flag_break:
         speedup(250)
         if (time.time() - t_ganrao) > 1:
-            LockonInterface.sendto("358")
+            bms_interface.sendto("358")
             t_ganrao = time.time()
             # print "下降到高度1500米"
         keep_roll(0)
@@ -963,11 +980,13 @@ def reverse_direction():
         s_right(10)
         s_right(10)
 
+bms_interface = BmsInterface.BmsIf()
+
 def fly_initialization():
-    LockonInterface.sendto("x:16383.5")
-    LockonInterface.sendto("y:16383.5")
-    LockonInterface.sendto("z:32767")
-    LockonInterface.sendto("K:398")
+    bms_interface.sendto("x:16383.5")
+    bms_interface.sendto("y:16383.5")
+    bms_interface.sendto("z:32767")
+    bms_interface.sendto("K:398")
 
 lockcommand=threading.Lock()
 Input =0
@@ -1002,15 +1021,19 @@ def set_command():
 
 def keep_levelflight():
     global Input,yaw, pitch
-    while 1:
-        #Envet
-        # print '111'
-        speedup(430)
-        keep_roll(0)
-        # keep_speed_vector(0)
-        keep_altrad(parsejson_altRad())
-        # LockonInterface.sendto("x:16383.5")
-        # LockonInterface.sendto("y:16383.5")
+    while True:
+        event_start.wait()
+        logger.warn("...start an episode...")
+        while True:
+            speedup(430)
+            keep_roll(0)
+            keep_altrad(parsejson_altRad())
+            if event_stop.is_set():
+                logger.warn("...stop an episode...")
+                event_stop.clear()
+                break
+            # bms_interface.sendto("x:16383.5")
+            # bms_interface.sendto("y:16383.5")
 
 def fly_test():
     global Input,yaw, pitch
@@ -1046,8 +1069,8 @@ def lock_and_fire():
             time.sleep(0.05)
             if parsejson_targetscan()["radar_on"] == False:
                 print "开雷达"
-                LockonInterface.sendto("106")
-                LockonInterface.sendto("86")
+                bms_interface.sendto("106")
+                bms_interface.sendto("86")
                 time.sleep(0.2)
 
             target_scan = parsejson_target()
@@ -1062,7 +1085,7 @@ def lock_and_fire():
                     if (fire_count < 2) and ((time.time() - t_fire) > 2):
                         fire_count = fire_count + 1
                         print "fire ", fire_count
-                        LockonInterface.sendto("84")
+                        bms_interface.sendto("84")
                         t_fire = time.time()
             else:
                 fire_count = 0
@@ -1091,12 +1114,12 @@ def fly_from_ground():
     jinyi=0
     qiluojia=0
     #放襟翼
-    LockonInterface.sendto("145")
+    bms_interface.sendto("145")
     time.sleep(0.5)
 
     #加速
     if jiali == 0:
-        LockonInterface.sendto("2004,-1")
+        bms_interface.sendto("2004,-1")
         jiali = 1
 
     t=time.time()
@@ -1107,7 +1130,7 @@ def fly_from_ground():
         # 高度大于20收起落架
         if (alt > 10) and (qiluojia==0):
             print "收起落架"
-            LockonInterface.sendto("430")
+            bms_interface.sendto("430")
             qiluojia=1
             t_qiluojia=time.time()
             # time.sleep(0.05)
@@ -1122,7 +1145,7 @@ def fly_from_ground():
         # 高度大于100收襟翼
         if (alt > 100) and (jinyi==0):
             print "收襟翼"
-            LockonInterface.sendto("146")
+            bms_interface.sendto("146")
             jinyi=1
             # time.sleep(0.05)
 
@@ -1152,19 +1175,19 @@ def keep_groundyaw(yaw):
         if a < -1:
             a = -1
         command = "2003" + "," + str(a)
-        LockonInterface.sendto(command)
+        bms_interface.sendto(command)
         e_groundyaw_last = e_yaw
         t_groundyaw = time.time()
 
 
 def drive_to_runway():
     #左转
-    LockonInterface.sendto("2003,-1")
+    bms_interface.sendto("2003,-1")
     #启动
     print "启动"
-    LockonInterface.sendto("2004,-0.1")
+    bms_interface.sendto("2004,-0.1")
     time.sleep(2)
-    LockonInterface.sendto("2004,0")
+    bms_interface.sendto("2004,0")
 
     t_print = time.time()
     while parsejson_yaw()>4.486:
@@ -1174,14 +1197,14 @@ def drive_to_runway():
             t_print = time.time()
 
     #加油
-    LockonInterface.sendto("2004,-0.6")
+    bms_interface.sendto("2004,-0.6")
     shouyou1=0
     while parsejson_selfinfor()['Position']['z'] > 635000:
         keep_groundyaw(4.486)
         time.sleep(0.05)
         if (parsejson_speed()>50) and (shouyou1==0):
             print "收油"
-            LockonInterface.sendto("2004,1")
+            bms_interface.sendto("2004,1")
             shouyou1=1
         if (time.time()-t_print) > 1:
             print "第一段路"
@@ -1189,7 +1212,7 @@ def drive_to_runway():
             t_print = time.time()
 
 
-    LockonInterface.sendto("2003,-1")
+    bms_interface.sendto("2003,-1")
 
     while parsejson_yaw()>4.368:
         if (time.time()-t_print) > 1:
@@ -1198,9 +1221,9 @@ def drive_to_runway():
             t_print = time.time()
 
     # print "启动"
-    # LockonInterface.sendto("2004,-0.1")
+    # bms_interface.sendto("2004,-0.1")
     # time.sleep(2)
-    # LockonInterface.sendto("2004,0")
+    # bms_interface.sendto("2004,0")
 
 
 
@@ -1216,14 +1239,14 @@ def drive_to_runway():
             t_print = time.time()
 
     print "减速"
-    LockonInterface.sendto("74")
+    bms_interface.sendto("74")
     while parsejson_speed()>10:
         if (time.time()-t_print) > 1:
             print "速度", parsejson_speed()
             t_print = time.time()
-    LockonInterface.sendto("75")
+    bms_interface.sendto("75")
 
-    LockonInterface.sendto("2003,1")
+    bms_interface.sendto("2003,1")
     while parsejson_yaw()< 5.8:
         if (time.time()-t_print) > 1:
             # print"当前航向角", 180*parsejson_yaw()/3.14
@@ -1231,7 +1254,7 @@ def drive_to_runway():
             t_print = time.time()
 
     print "加速"
-    LockonInterface.sendto("2004,-0.5")
+    bms_interface.sendto("2004,-0.5")
     shouyou2=0
     print "第三段路"
     while parsejson_selfinfor()['Position']['z'] > 634562:
@@ -1240,7 +1263,7 @@ def drive_to_runway():
         time.sleep(0.05)
         if (parsejson_speed()>10) and (shouyou2==0):
             print "收油"
-            LockonInterface.sendto("2004,1")
+            bms_interface.sendto("2004,1")
             shouyou2=1
         if (time.time()-t_print) > 1:
             print "第三段路"
@@ -1248,7 +1271,7 @@ def drive_to_runway():
             print "位置", parsejson_selfinfor()['Position']['z']
             t_print = time.time()
 
-    LockonInterface.sendto("2003,1")
+    bms_interface.sendto("2003,1")
     e=1
     while e > 0:
         e=1.2280-parsejson_yaw()
@@ -1269,10 +1292,10 @@ def drive_to_runway():
             t_print = time.time()
 
     print "制动"
-    LockonInterface.sendto("74")
-    LockonInterface.sendto("2004,1")
+    bms_interface.sendto("74")
+    bms_interface.sendto("2004,1")
     time.sleep(2)
-    LockonInterface.sendto("75")
+    bms_interface.sendto("75")
 
 
 def back_and_landing():
@@ -1280,11 +1303,11 @@ def back_and_landing():
 
     if parsejson_targetscan()["radar_on"] == True:
         print "关雷达"
-        LockonInterface.sendto("106")
-        LockonInterface.sendto("86")
+        bms_interface.sendto("106")
+        bms_interface.sendto("86")
         time.sleep(0.2)
     print "关加力"
-    LockonInterface.sendto("2004,0")
+    bms_interface.sendto("2004,0")
 
     tar_x = -318158.1875
     tar_y = 2000
@@ -1328,9 +1351,9 @@ def back_and_landing():
     # 自动巡航返航
 
     print"开始自动着陆"
-    LockonInterface.sendto("105")  # 切换导航模式
+    bms_interface.sendto("105")  # 切换导航模式
     time.sleep(1)
-    LockonInterface.sendto("62")  # 自动驾驶
+    bms_interface.sendto("62")  # 自动驾驶
     time.sleep(1)
 
     qiluojia = 0
@@ -1340,22 +1363,22 @@ def back_and_landing():
         print "alt =", alt
         if alt < 300 and qiluojia == 0:
             print "放起落架"
-            LockonInterface.sendto("431")
+            bms_interface.sendto("431")
             qiluojia = 1
         if alt < 4:
             time.sleep(1)
-            LockonInterface.sendto("74")
+            bms_interface.sendto("74")
             time.sleep(1)
         time.sleep(1)
     time.sleep(15)
     print "关闭引擎"
-    LockonInterface.sendto("310")
+    bms_interface.sendto("310")
     time.sleep(1)
-    LockonInterface.sendto("313")
+    bms_interface.sendto("313")
     time.sleep(1)
-    LockonInterface.sendto("314")
+    bms_interface.sendto("314")
     time.sleep(1)
-    LockonInterface.sendto("71")
+    bms_interface.sendto("71")
 
 def combat_test():
     global jiali
@@ -1372,11 +1395,11 @@ def combat_test():
 
         t_finish = time.time()
         if shijiao==0:
-            LockonInterface.sendto("8")
-            LockonInterface.sendto("36")
-            LockonInterface.sendto("336")
+            bms_interface.sendto("8")
+            bms_interface.sendto("36")
+            bms_interface.sendto("336")
             time.sleep(1.3)
-            LockonInterface.sendto("337")
+            bms_interface.sendto("337")
             shijiao=1
         # drive_to_runway()
         # fly_from_ground()
@@ -1392,8 +1415,8 @@ def combat_test():
         waittime = 0
 
         if shijiao==1:
-            LockonInterface.sendto("7")
-            LockonInterface.sendto("36")
+            bms_interface.sendto("7")
+            bms_interface.sendto("36")
             shijiao=0
 
 
@@ -1516,7 +1539,7 @@ def combat_test():
                 fire_flag = fire_count
 
                 if shijiao == 0:
-                    LockonInterface.sendto("8")
+                    bms_interface.sendto("8")
                     shijiao = 1
                 reverse_angle = 0
                 # 躲导弹机动之前如果能发弹就先打一颗再跑
@@ -1524,7 +1547,7 @@ def combat_test():
                     if target_lock[0]["target"]['distance'] < target_lock[0]['DLZ']['RPI']:
                         fire_count = fire_count +1
                         print "fire", fire_count
-                        LockonInterface.sendto("84")
+                        bms_interface.sendto("84")
                         time.sleep(1)
                 # fire_count = 0
                 print "躲导弹"
@@ -1625,7 +1648,7 @@ def combat_test():
                 detect = 0 #暂时没用
 
                 if shijiao == 1:
-                    LockonInterface.sendto("7")
+                    bms_interface.sendto("7")
                     shijiao = 0
 
             # 如果没有导弹威胁，则执行。。。
@@ -1675,9 +1698,9 @@ def combat_test():
                             fire_count=fire_count+1
                             print "fire ", fire_count
                             print target_lock[0]["target"]['distance']
-                            LockonInterface.sendto("84")
+                            bms_interface.sendto("84")
                             if shijiao == 0:
-                                LockonInterface.sendto("8")
+                                bms_interface.sendto("8")
                                 shijiao = 1
                             t_fire = time.time()
 
@@ -1689,9 +1712,9 @@ def combat_test():
                                         fire_count = fire_count + 1
                                         print "fire ", fire_count
                                         print target_lock[0]["target"]['distance']
-                                        LockonInterface.sendto("84")
+                                        bms_interface.sendto("84")
                                         if shijiao == 0:
-                                            LockonInterface.sendto("8")
+                                            bms_interface.sendto("8")
                                             shijiao = 1
                                         t_fire = time.time()
                             #15公里内10秒发一颗
@@ -1701,16 +1724,16 @@ def combat_test():
                                         fire_count = fire_count + 1
                                         print "fire ", fire_count
                                         print target_lock[0]["target"]['distance']
-                                        LockonInterface.sendto("84")
+                                        bms_interface.sendto("84")
                                         if shijiao == 0:
-                                            LockonInterface.sendto("8")
+                                            bms_interface.sendto("8")
                                             shijiao = 1
                                         t_fire = time.time()
 
                 #如果未锁定敌机，则执行...
                 else:
                     if shijiao == 1:
-                        LockonInterface.sendto("7")
+                        bms_interface.sendto("7")
                         shijiao = 0
                     fire_count=0
                     #如果扫描到敌机，则保持追踪并开始锁定
@@ -1746,8 +1769,8 @@ def combat_test():
                             if dis > 100000:
                                 if parsejson_targetscan()["radar_on"] == True:
                                     print "关雷达"
-                                    LockonInterface.sendto("106")
-                                    LockonInterface.sendto("86")
+                                    bms_interface.sendto("106")
+                                    bms_interface.sendto("86")
                                     time.sleep(0.2)
                                 if (time.time() - t_print) > 2:
                                     t_print = time.time()
@@ -1756,8 +1779,8 @@ def combat_test():
                             else:
                                 if parsejson_targetscan()["radar_on"] == False:
                                     print "开雷达"
-                                    LockonInterface.sendto("106")
-                                    LockonInterface.sendto("86")
+                                    bms_interface.sendto("106")
+                                    bms_interface.sendto("86")
                                     time.sleep(0.2)
                                 if (time.time() - t_print) > 2:
                                     t_print = time.time()
@@ -1767,8 +1790,8 @@ def combat_test():
                         else:
                             if parsejson_targetscan()["radar_on"] == False:
                                 print "开雷达"
-                                LockonInterface.sendto("106")
-                                LockonInterface.sendto("86")
+                                bms_interface.sendto("106")
+                                bms_interface.sendto("86")
                                 time.sleep(0.2)
 
                             ##如果记录了上一时刻敌机信息，则转向上一时刻的敌机位置
@@ -1830,7 +1853,7 @@ def combat_test():
 
     # print "退出，敌机信息",parsejson_enemyid()
     # if shijiao == 0:
-    #     LockonInterface.sendto("8")
+    #     bms_interface.sendto("8")
     #     shijiao=1
     # back_and_landing()
 
