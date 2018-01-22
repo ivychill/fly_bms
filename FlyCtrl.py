@@ -6,7 +6,7 @@ import threading
 import json,sys
 import LockonInterface
 import random
-
+import my_config
 jiasu =0
 
 # 相关参数获取
@@ -73,7 +73,7 @@ def parsejson_alpha():
     return -100
 
 #速度矢量符位置
-def Vaaa():
+def speed_vector():
     v_a = parsejson_pitch() - parsejson_alpha()
     return v_a
 
@@ -272,19 +272,23 @@ def keep_roll(roll):
     if e < -math.pi:
         e = e + 2 * math.pi
     if (time.time() - t_roll) > 0.12:
-        Kp1 = 0.581
-        Ki1 =0.00000
-        Kd1 = 0.25
-        # Kp1 =0.38   （0.25）
-        # Ki1 =0.00000
-        # Kd1 = 0.25
-
-
-
+        if abs(e)>0.9*math.pi or abs(roll) == math.pi:
+            Kp1 = 0.333
+            Ki1 =0.00000
+            Kd1 = 0
+            # print '111'0.334
+            # command2 = "y" + ":" + str(32767 * (0.215 * (abs(roll) + 0.03) + 1) / 2)
+            # LockonInterface.sendto(command2)
+        else:
+            Kp1 = 0.581
+            Ki1 = 0.00000
+            Kd1 = 0.25
+            command2 = "y" + ":" + str(32767 * (0.215 * (abs(roll) + 0.03) + 1) / 2)
+            LockonInterface.sendto(command2)
         #可用参数
-        # Kp1 = 0.28  0.381
-        # Ki1 = 0.000005  0.000001
-        # Kd1 = 0.16    0.18
+        # Kp1 = 0.581
+        # Ki1 = 0.00000
+        # Kd1 = 0.25
         # Kp1 =0.38
         # Ki1 =0.000005
         # Kd1 = 0.18
@@ -300,29 +304,36 @@ def keep_roll(roll):
         # if e > 0:
 
         a = Kp1 * e + Ki1* e_roll_sum + Kd1* (delta_e)
-        # else:
-        #     a = Kp2* e + Ki2 * e_roll_sum + Kd2* (e - e_roll_last)
 
         if a < -1:
             a = -1
         if a > 1:
             a = 1
 
+        my_config.logger.info('PID：a = %s * e + %s* e_roll_sum + %s* (delta_e)' % (Kp1, Ki1, Kd1))
+        my_config.logger.debug('比例:%s' % e)
+        my_config.logger.debug('积分:%s' % e_roll_sum)
+        my_config.logger.debug('微分:%s' % delta_e)
+        my_config.logger.debug('speed:%s' % parsejson_speed())
+        my_config.logger.debug('roll:%s' % parsejson_bank())
 
         command1 = "x" + ":" + str(32767*(a+1)/2)
         LockonInterface.sendto(command1)
-        command2 = "y" + ":" + str(32767 * (0.215 * (abs(roll) + 0.03) + 1) / 2)
-        LockonInterface.sendto(command2)
         t_roll = time.time()
         e_roll_last=e
+
+
+
+
+
 
 
 t_va=time.time()
 e_va_last=0
 e_va_sum = 0
-def keep_Va(va):
+def keep_speed_vector(va):
     global t_va,e_va_last,e_va_sum,a
-    e=va-Vaaa()
+    e=va-speed_vector()
     e_va_sum = e_va_sum + e
     if  e>math.pi:
         e=e-2*math.pi
@@ -376,7 +387,7 @@ def keep_altrad(target_altrad):
         Va_command = 0.35
     if Va_command < -0.35:
         Va_command = -0.35
-    keep_Va(Va_command)
+    keep_speed_vector(Va_command)
 
 #海拔高度控制
 def keep_altbar(target_altbar):
@@ -411,75 +422,6 @@ yaw_last=parsejson_yaw()
 reach_yaw=0
 n_roll=0
 a_roll=0
-# def keep_yaw_pitch(yaw,pitch):
-#     global t_yaw_pitch,yaw_last,reach_yaw,n_roll,a_roll
-#     my_yaw=parsejson_yaw()
-#
-#     if abs(yaw-my_yaw)<0.1:
-#         yaw_last==yaw
-#
-#     if yaw_last!=yaw:
-#         reach_yaw=0
-#         yaw_last = yaw
-#         n_roll=0
-#
-#     e_yaw = yaw - my_yaw
-#     if e_yaw > math.pi:
-#         e_yaw = e_yaw - 2 * math.pi
-#     if e_yaw < -math.pi:
-#         e_yaw = e_yaw + 2 * math.pi
-#     a = 7 * e_yaw
-#     speed=parsejson_speed()
-#     my_pitch = parsejson_pitch()
-#     if speed<250:
-#         tresh=1.2
-#         if my_pitch<0:
-#             tresh = 1
-#         # print "最小速度转角", speed
-#     else:
-#         tresh = 1.1
-#         if my_pitch<0:
-#             tresh = 0.8
-#         # print "最大速度转角",speed
-#
-#     if a > tresh:
-#         a = tresh
-#     if a < -tresh:
-#         a = -tresh
-#     a_pitch=abs(e_yaw)
-#
-#     if a_pitch>0.25:
-#         a_pitch=0.25
-#
-#     if pitch > 0.17:
-#         pitch_command = pitch-a_pitch*(pitch-0.17)/0.25
-#     else:
-#         pitch_command = pitch+a_pitch*(0.17-pitch)/0.25
-#     keep_pitch(pitch_command)
-#     keep_roll(a)
-#
-#
-#     ##判断是否新命令发出，发出
-#     # if yaw_last==yaw:
-#     if abs(e_yaw)<0.05:
-#         reach_yaw=1
-#     if (time.time() - t_yaw_pitch) > 0.05:
-#         keep_pitch(pitch_command)
-#         if reach_yaw==0:
-#             # keep_pitch(0.17)
-#             if abs(parsejson_pitch()-0.17)<0.1:
-#                 keep_roll(a)
-#                 # print "进入keeproll",a*180/3.14
-#         else:
-#             # keep_pitch(pitch)
-#             if n_roll==0:
-#                 a_roll=a
-#             roll_command=a_roll * (30.0 - n_roll) / 30.0
-#             keep_roll(roll_command)
-#             n_roll=n_roll+1
-#             if n_roll>30:
-#                 n_roll=30
-#         t_yaw_pitch = time.time()
 
 ##转弯
 def keep_yaw_Va(yaw,Va):
@@ -492,7 +434,7 @@ def keep_yaw_Va(yaw,Va):
         e_yaw = e_yaw + 2 * math.pi
     a = 7 * e_yaw
     speed=parsejson_speed()
-    my_Va = Vaaa()
+    my_Va = speed_vector()
     if speed>430:
         tresh=1.2
         if my_Va<0:
@@ -507,16 +449,15 @@ def keep_yaw_Va(yaw,Va):
     if a < -tresh:
         a = -tresh
     keep_roll(a)
-    keep_Va(Va)
+    keep_speed_vector(Va)
 
 
 #盘旋
-def Spiral(roll,Va):
+def spiral(roll,Va):
 
     LockonInterface.sendto("z:0")
     keep_roll(roll)
-    keep_Va(Va)
-
+    keep_speed_vector(Va)
 
 
 t_commandx=time.time()
@@ -655,55 +596,57 @@ def down(t):
     # if jiali == 0:
     #     LockonInterface.sendto("2004,-1")
     #     jiali = 1
-    if parsejson_targetscan()["radar_on"] == True:
-        print "关雷达"
-        LockonInterface.sendto("106")
-        LockonInterface.sendto("86")
-        time.sleep(0.2)
-
-    LockonInterface.sendto("358")
+    # if parsejson_targetscan()["radar_on"] == True:
+    #     print "关雷达"
+    #     LockonInterface.sendto("106")
+    #     LockonInterface.sendto("86")
+        # time.sleep(0.2)
+    speedup(430)
+    time.sleep(10)
+    # LockonInterface.sendto("358")
     t_ganrao = time.time()
 
     t_duodaodan = time.time()
-    LockonInterface.sendto("2001,0.3")
+    LockonInterface.sendto("y:25000")
 
     while (time.time() - t_duodaodan) < 3:
-        speedup(250)
+        speedup(430)
         if (time.time() - t_ganrao) > 1:
-            LockonInterface.sendto("358")
+            # LockonInterface.sendto("358")
             t_ganrao = time.time()
-            print "半筋斗翻转"
+            # print "半筋斗翻转"
         keep_roll(-math.pi)
-        time.sleep(0.05)
+        # time.sleep(0.05)
 
     t_duodaodan = time.time()
     while (time.time() - t_duodaodan) < 3:
-        speedup(250)
+        speedup(430)
         if (time.time() - t_ganrao) > 1:
-            LockonInterface.sendto("358")
+            # LockonInterface.sendto("358")
             t_ganrao = time.time()
-            print "半筋斗翻转"
-        time.sleep(0.05)
+            # print "半筋斗翻转"
+        # time.sleep(0.05)
     while parsejson_pitch() < 0:
-        speedup(250)
+        speedup(430)
         if (time.time() - t_ganrao) > 1:
-            LockonInterface.sendto("358")
+            # LockonInterface.sendto("358")
             t_ganrao = time.time()
-            print "半筋斗翻转"
-        time.sleep(0.05)
+            # print "半筋斗翻转"
+        # time.sleep(0.05)
 
     t_duodaodan = time.time()
-    print "筋斗完毕"
+    # print "筋斗完毕"
 
     while (time.time() - t_duodaodan) < t:
-        speedup(250)
+        speedup(430)
         keep_roll(0)
-        keep_altbar(1500)
-        time.sleep(0.05)
+        keep_speed_vector(0)
+        # keep_altrad(5000)
+        # time.sleep(0.05)
         if (time.time() - t_ganrao) > 1:
-            LockonInterface.sendto("358")
+            # LockonInterface.sendto("358")
             t_ganrao = time.time()
-            print "下降到高度1500米"
+            # print "下降到高度1500米"
 
 def up(t):
     # global jiali
@@ -762,51 +705,56 @@ def s_left(flag_break):
     # if jiali == 0:
     #     LockonInterface.sendto("2004,-1")
     #     jiali = 1
-    if parsejson_targetscan()["radar_on"] == True:
-        print "关雷达"
-        LockonInterface.sendto("106")
-        LockonInterface.sendto("86")
-        time.sleep(0.2)
-
+    # if parsejson_targetscan()["radar_on"] == True:
+    #     print "关雷达"
+    #     LockonInterface.sendto("106")
+    #     LockonInterface.sendto("86")
+    #     time.sleep(0.2)
+    speedup(430)
+    time.sleep(10)
     t_duodaodan = time.time()
     t_ganrao =time.time()
 
-    while (time.time() - t_duodaodan) < 10:
-        speedup(250)
+    while (time.time() - t_duodaodan) < 20:
+        speedup(430)
         if (time.time() - t_ganrao) > 1:
-            LockonInterface.sendto("358")
+            # LockonInterface.sendto("358")
             t_ganrao = time.time()
-            print "左转"
-        keep_roll(-1.2)
-        keep_altbar(1500)
-        time.sleep(0.05)
+            # print "左转"
+        keep_roll(-80*math.pi/180)
+        keep_speed_vector(8*math.pi/180)
+        # keep_altbar(1500)
+        # time.sleep(0.05)
 
     t_duodaodan = time.time()
 
     while (time.time() - t_duodaodan) < 1:
-        speedup(250)
+        speedup(430)
         if (time.time() - t_ganrao) > 1:
-            LockonInterface.sendto("358")
+            # LockonInterface.sendto("358")
             t_ganrao = time.time()
 
         keep_roll(0)
-        keep_altbar(1500)
-        time.sleep(0.05)
+        keep_speed_vector(0)
+        # keep_altbar(1500)
+        # time.sleep(0.05)
 
     # lock_entrance.acquire()
     # flag_entrance = True
     # lock_entrance.release()
-    event_entrance.set()
+    # event_entrance.set()
 
-    while not flag_break:
-        speedup(250)
+    # while not flag_break:
+    while (time.time() - t_duodaodan) < 20:
+        speedup(430)
         if (time.time() - t_ganrao) > 1:
-            LockonInterface.sendto("358")
+            # LockonInterface.sendto("358")
             t_ganrao = time.time()
 
         keep_roll(0)
-        keep_altbar(1500)
-        time.sleep(0.1)
+        keep_speed_vector(0)
+        # keep_altbar(1500)
+        # time.sleep(0.1)
 
 def s_right(flag_break):
     # global jiali,flag_entrance
@@ -814,54 +762,57 @@ def s_right(flag_break):
     # if jiali == 0:
     #     LockonInterface.sendto("2004,-1")
     #     jiali = 1
-    if parsejson_targetscan()["radar_on"] == True:
-        print "关雷达"
-        LockonInterface.sendto("106")
-        LockonInterface.sendto("86")
-        time.sleep(0.2)
-
+    # if parsejson_targetscan()["radar_on"] == True:
+    #     print "关雷达"
+    #     LockonInterface.sendto("106")
+    #     LockonInterface.sendto("86")
+    #     time.sleep(0.2)
+    speedup(430)
+    # LockonInterface.sendto("z:0")
     t_duodaodan = time.time()
     t_ganrao =time.time()
 
     while (time.time() - t_duodaodan) < 10:
-        speedup(250)
+        speedup(430)
         if (time.time() - t_ganrao) > 1:
-            LockonInterface.sendto("358")
+            # LockonInterface.sendto("358")
             t_ganrao = time.time()
-            print "右转"
-        keep_roll(1.2)
-        keep_altbar(1500)
-        time.sleep(0.05)
+            # print "右转"
+        keep_roll(80 * math.pi / 180)
+        keep_speed_vector(8 * math.pi / 180)
+        # time.sleep(0.05)
 
     t_duodaodan = time.time()
 
     while (time.time() - t_duodaodan) < 1:
-        speedup(250)
+        speedup(430)
         if (time.time() - t_ganrao) > 1:
-            LockonInterface.sendto("358")
+            # LockonInterface.sendto("358")
             t_ganrao = time.time()
 
         keep_roll(0)
-        keep_altbar(1500)
-        time.sleep(0.05)
+        keep_speed_vector(0)
+        # time.sleep(0.05)
 
     # lock_entrance.acquire()
     # flag_entrance = True
     # lock_entrance.release()
     event_entrance.set()
 
-    while not flag_break:
-        speedup(250)
+    # while not flag_break:
+    while (time.time() - t_duodaodan) < 20:
+        speedup(430)
         if (time.time() - t_ganrao) > 1:
-            LockonInterface.sendto("358")
+            # LockonInterface.sendto("358")
             t_ganrao = time.time()
             # print "下降到高度1500米"
         keep_roll(0)
-        keep_altbar(1500)
-        time.sleep(0.1)
+        keep_speed_vector(0)
+        # keep_altbar(1500)
+        # time.sleep(0.1)
 
 
-def off_set(yaw,pitch):
+def off_set(yaw,va):
     if random.randint(0, 9) < 5:
         print "向右偏置"
         target_yaw = yaw + math.pi/8
@@ -872,8 +823,8 @@ def off_set(yaw,pitch):
         if e_yaw < -math.pi:
             e_yaw = e_yaw + 2*math.pi
         while e_yaw > 0:
-            keep_roll(1.2)
-            keep_pitch(pitch)
+            keep_roll(math.pi/3)
+            keep_speed_vector(va)
             current_yaw = parsejson_yaw()
             e_yaw = target_yaw - current_yaw
             if e_yaw < -math.pi:
@@ -888,8 +839,8 @@ def off_set(yaw,pitch):
         if e_yaw > math.pi:
             e_yaw = e_yaw - 2 * math.pi
         while e_yaw < 0:
-            keep_roll(-1.2)
-            keep_pitch(pitch)
+            keep_roll(-math.pi/3)
+            keep_speed_vector(va)
             current_yaw = parsejson_yaw()
             e_yaw = target_yaw - current_yaw
             if e_yaw > math.pi:
@@ -899,11 +850,11 @@ def off_set(yaw,pitch):
     print "转平"
     while (time.time() - t) < 3:
         keep_roll(0)
-        keep_pitch(pitch)
-        time.sleep(0.05)
+        keep_speed_vector(va)
+        # time.sleep(0.05)
     print "发弹"
-    LockonInterface.sendto("350")
-    time.sleep(1)
+    # LockonInterface.sendto("350")
+    # time.sleep(1)
 
 def turn_to_angle1(angle,t):
     # global jiali
@@ -1022,26 +973,27 @@ lockcommand=threading.Lock()
 Input =0
 yaw =0.00
 pitch= 0.00
-def Setcommand():
-    global Input, roll, pitch, yaw, lockcommand, va, high
+def set_command():
+    global Input, roll, pitch, yaw, lockcommand, va, high,t
     time.sleep(2)
     while 1:
         # flag = input("输入标识1或2：")
-        a = input("输入横滚角（-180 - 180）：")
+        # a = input("输入横滚角（-180 - 180）：")
         # c = input("输入偏航角（-180 - 180）：")
-        d = input("输入俯仰角（-90 - 90）：")
+        # d = input("输入俯仰角（-90 - 90）：")
         # high = input("输入保持高度（10000-16000）：")
+        # t = input("输入平飞时间：")
 
 
         # Input = 0
         lockcommand.acquire()
-        roll = (a / 180.0) * math.pi
+        # roll = (a / 180.0) * math.pi
         print 'roll:', 180 * parsejson_bank() / math.pi
         # yaw = (c / 180.0) * math.pi
         # print 'yaw:', 180 * parsejson_yaw() / math.pi
-        va = (d / 180.0) * math.pi
-        print 'va:', 180 * Vaaa() / math.pi
-        print '速度：', parsejson_speed()
+        # va = (d / 180.0) * math.pi
+        # print 'va:', 180 * speed_vector() / math.pi
+        # print '速度：', parsejson_speed()
         # print '实际高度:',parsejson_altRad()
         # print '微分:', delta_e
         lockcommand.release()
@@ -1055,28 +1007,31 @@ def keep_levelflight():
         # print '111'
         speedup(430)
         keep_roll(0)
-        keep_Va(0)
+        # keep_speed_vector(0)
+        keep_altrad(parsejson_altRad())
         # LockonInterface.sendto("x:16383.5")
         # LockonInterface.sendto("y:16383.5")
 
 def fly_test():
     global Input,yaw, pitch
-    thread_console = threading.Thread(target = Setcommand)
+    thread_console = threading.Thread(target = set_command)
     thread_console.start()
     while 1:
         while Input:
             # lockcommand.acquire()
-            speedup(430)
+            # speedup(430)
             # UdpClient.sendto("z:0")
             # print '速度：', parsejson_speed()
             # keep_pitch(pitch)
             # keep_yaw_Va(yaw,va)
             # print pitch
             # keep_roll(roll)
-            # keep_Va(va)
-            # Flyctrlmodule(flag,va,roll,yaw)
+            # keep_speed_vector(va)
             # keep_altrad(high)
-            Spiral(roll, va)
+            # spiral(roll, va)
+            # down(10)
+            s_left(0)
+            s_right(0)
 
 def initFlyCtrl():
     t2 = threading.Thread(target=fly_test)
