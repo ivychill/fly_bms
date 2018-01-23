@@ -67,7 +67,7 @@ def parsejson_alpha():
         try:
             obj = json.loads(BmsInterface.datalist[0])
             BmsInterface.srvlock.release()
-            return obj['alpha']/180*math.pi
+            return obj['alpha']*math.pi/180
         except ZeroDivisionError,e:
             BmsInterface.srvlock.release()
     BmsInterface.srvlock.release()
@@ -283,7 +283,7 @@ def keep_roll(roll):
             Kp1 = 0.581
             Ki1 = 0.00000
             Kd1 = 0.25
-            command2 = "y" + ":" + str(32767 * (0.215 * (abs(roll) + 0.03) + 1) / 2)
+            command2 = "y" + ":" + str(32767 * (0.215 * (abs(roll) + 0.01) + 1) / 2)
             bms_interface.sendto(command2)
         #可用参数
         # Kp1 = 0.581
@@ -432,11 +432,11 @@ def keep_yaw_Va(yaw,Va):
     speed=parsejson_speed()
     my_Va = speed_vector()
     if speed>430:
-        tresh=1.2
+        tresh=1.1
         if my_Va<0:
             tresh = 1
     else:
-        tresh = 1.1
+        tresh = 1.05
         if my_Va<0:
             tresh = 0.8
 
@@ -738,8 +738,8 @@ def s_left(flag_break):
             # bms_interface.sendto("358")
             t_ganrao = time.time()
             # print "左转"
-        keep_roll(-80*math.pi/180)
-        keep_speed_vector(8*math.pi/180)
+        keep_roll(-75*math.pi/180)   ###-80
+        keep_speed_vector(10*math.pi/180)   ###8
         # keep_altbar(1500)
         # time.sleep(0.05)
 
@@ -762,7 +762,7 @@ def s_left(flag_break):
     # event_entrance.set()
 
     # while not flag_break:
-    while (time.time() - t_duodaodan) < 20:
+    while (time.time() - t_duodaodan) < 5:
         speedup(430)
         if (time.time() - t_ganrao) > 1:
             # bms_interface.sendto("358")
@@ -789,14 +789,14 @@ def s_right(flag_break):
     t_duodaodan = time.time()
     t_ganrao =time.time()
 
-    while (time.time() - t_duodaodan) < 10:
+    while (time.time() - t_duodaodan) < 20:
         speedup(430)
         if (time.time() - t_ganrao) > 1:
             # bms_interface.sendto("358")
             t_ganrao = time.time()
             # print "右转"
-        keep_roll(80 * math.pi / 180)
-        keep_speed_vector(8 * math.pi / 180)
+        keep_roll(75 * math.pi / 180)   #80
+        keep_speed_vector(10 * math.pi / 180)   #8
         # time.sleep(0.05)
 
     t_duodaodan = time.time()
@@ -817,7 +817,7 @@ def s_right(flag_break):
     event_entrance.set()
 
     # while not flag_break:
-    while (time.time() - t_duodaodan) < 20:
+    while (time.time() - t_duodaodan) < 5:
         speedup(430)
         if (time.time() - t_ganrao) > 1:
             # bms_interface.sendto("358")
@@ -832,7 +832,7 @@ def s_right(flag_break):
 def off_set(yaw,va):
     if random.randint(0, 9) < 5:
         print "向右偏置"
-        target_yaw = yaw + math.pi/8
+        target_yaw = yaw + 5*math.pi/18
         if target_yaw > 2*math.pi:
             target_yaw = target_yaw -2*math.pi
         current_yaw = parsejson_yaw()
@@ -841,14 +841,14 @@ def off_set(yaw,va):
             e_yaw = e_yaw + 2*math.pi
         while e_yaw > 0:
             keep_roll(math.pi/3)
-            keep_speed_vector(va)
+            # keep_speed_vector(va)
             current_yaw = parsejson_yaw()
             e_yaw = target_yaw - current_yaw
             if e_yaw < -math.pi:
                 e_yaw = e_yaw + 2 * math.pi
     else:
         print "向左偏置"
-        target_yaw = yaw - math.pi /8
+        target_yaw = yaw - 5*math.pi/18
         if target_yaw < 0:
             target_yaw = target_yaw + 2 * math.pi
         current_yaw = parsejson_yaw()
@@ -857,7 +857,7 @@ def off_set(yaw,va):
             e_yaw = e_yaw - 2 * math.pi
         while e_yaw < 0:
             keep_roll(-math.pi/3)
-            keep_speed_vector(va)
+            # keep_speed_vector(va)
             current_yaw = parsejson_yaw()
             e_yaw = target_yaw - current_yaw
             if e_yaw > math.pi:
@@ -998,25 +998,49 @@ def set_command():
     while 1:
         # flag = input("输入标识1或2：")
         # a = input("输入横滚角（-180 - 180）：")
-        # c = input("输入偏航角（-180 - 180）：")
-        # d = input("输入俯仰角（-90 - 90）：")
+        c = input("输入偏航角（-180 - 180）：")
+        d = input("输入俯仰角（-90 - 90）：")
         # high = input("输入保持高度（10000-16000）：")
         # t = input("输入平飞时间：")
 
 
         # Input = 0
         lockcommand.acquire()
+        # print speed_vector()
         # roll = (a / 180.0) * math.pi
-        print 'roll:', 180 * parsejson_bank() / math.pi
-        # yaw = (c / 180.0) * math.pi
-        # print 'yaw:', 180 * parsejson_yaw() / math.pi
-        # va = (d / 180.0) * math.pi
-        # print 'va:', 180 * speed_vector() / math.pi
-        # print '速度：', parsejson_speed()
+        # print 'roll:', 180 * parsejson_bank() / math.pi
+        yaw = (c / 180.0) * math.pi
+        print 'yaw:', 180 * parsejson_yaw() / math.pi
+        va = (d / 180.0) * math.pi
+        print 'va:', 180 * speed_vector() / math.pi
+        print '速度：', parsejson_speed()
         # print '实际高度:',parsejson_altRad()
         # print '微分:', delta_e
         lockcommand.release()
         Input = 1
+
+def random_fly():
+    init_time = time.time()
+    time.sleep(2)
+    while (time.time() - init_time) < 10:
+        speedup(430)
+        keep_roll(0)
+        keep_speed_vector(0)
+    init_high = random.normalvariate(13000,1250)
+    random_yaw = random.randint(-45, 45)
+    init_yaw = parsejson_yaw() + (random_yaw*math.pi/180)
+    while abs(init_yaw - parsejson_yaw()) > 0.1*math.pi/ 180:
+        speedup(430)
+        keep_yaw_Va(init_yaw,0.1)
+    init_time = time.time()
+    while (time.time() - init_time) < 10:
+        speedup(430)
+        keep_yaw_Va(init_yaw, 0)
+    while True:
+        speedup(430)
+        keep_roll(0)
+        keep_altrad(init_high)
+
 
 
 def keep_levelflight():
@@ -1042,19 +1066,20 @@ def fly_test():
     while 1:
         while Input:
             # lockcommand.acquire()
-            # speedup(430)
+            speedup(430)
             # UdpClient.sendto("z:0")
             # print '速度：', parsejson_speed()
             # keep_pitch(pitch)
-            # keep_yaw_Va(yaw,va)
+            keep_yaw_Va(yaw,va)
             # print pitch
             # keep_roll(roll)
             # keep_speed_vector(va)
             # keep_altrad(high)
             # spiral(roll, va)
             # down(10)
-            s_left(0)
-            s_right(0)
+            # s_left(0)
+            # s_right(0)
+            # keep_levelflight()
 
 def initFlyCtrl():
     t2 = threading.Thread(target=fly_test)
