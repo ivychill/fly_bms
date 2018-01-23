@@ -7,6 +7,7 @@ import json,sys
 import BmsInterface
 import random
 from my_config import *
+import xmlrpclib
 
 jiasu =0
 
@@ -589,6 +590,14 @@ def reboot():
     logger.info("send bms ctrl cmd reboot...")
     bms_interface.send_ctrl_cmd('3')
     logger.info("bms rebooted...")
+
+image_proxy = xmlrpclib.ServerProxy("http://192.168.24.108:5001/")
+
+def get_td():
+    return image_proxy.get_td()
+
+def get_enemy_coord():
+    return image_proxy.get_enemy_coord()
 
 # flag_entrance = False
 flag_break = False
