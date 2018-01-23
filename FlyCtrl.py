@@ -1019,6 +1019,7 @@ def set_command():
         lockcommand.release()
         Input = 1
 
+##随机飞行
 def random_fly():
     init_time = time.time()
     time.sleep(2)
