@@ -12,7 +12,7 @@ def register_rpc():
     server.register_function(get_fly_state, "get_fly_state")
     server.register_function(start, "start")
     server.register_function(stop, "stop")
-    server.register_function(reboot, "reboot")
+    # server.register_function(reboot, "reboot")
     server.serve_forever()  # 启动服务器,并使其对这个连接可用
 
 #
@@ -24,15 +24,12 @@ def get_fly_state():
 
     return z, speed, pitch, yaw
 
-# TODO:开局
 def start():
     logger.info("started...")
     FlyCtrl.start()
 
-# TODO:终止
 def stop():
     FlyCtrl.stop()
 
-# TODO:终止
 def reboot():
     FlyCtrl.reboot()

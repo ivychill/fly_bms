@@ -575,21 +575,19 @@ event_start = threading.Event()
 event_stop = threading.Event()
 
 def start():
-    logger.info("send bms ctrl cmd start...")
-    bms_interface.send_ctrl_cmd('1')
-    logger.info("bms started...")
+    logger.info("set event start...")
+    # bms_interface.send_ctrl_cmd('1')
     event_start.set()
 
 def stop():
     event_stop.set()
-    logger.info("send bms ctrl cmd stop...")
-    bms_interface.send_ctrl_cmd('2')
-    logger.info("bms stopped...")
+    logger.info("set event stop...")
+    # bms_interface.send_ctrl_cmd('2')
 
-def reboot():
-    logger.info("send bms ctrl cmd reboot...")
-    bms_interface.send_ctrl_cmd('3')
-    logger.info("bms rebooted...")
+# def reboot():
+#     logger.info("send bms ctrl cmd reboot...")
+#     bms_interface.send_ctrl_cmd('3')
+#     logger.info("bms rebooted...")
 
 image_proxy = xmlrpclib.ServerProxy("http://192.168.24.108:5001/")
 
