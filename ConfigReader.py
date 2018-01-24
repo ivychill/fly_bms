@@ -16,7 +16,6 @@ class Config(object):
         self.config = ConfigParser.ConfigParser()
         self.config.readfp(open("config.ini", "rb"))
         #self.config.read("config.ini")
-        print "init Config ok"
 
     @staticmethod
     def singleton():

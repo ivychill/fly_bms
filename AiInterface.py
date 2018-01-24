@@ -2,10 +2,12 @@
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 import FlyCtrl
+from my_config import *
 
 def register_rpc():
     # server = SimpleXMLRPCServer(("192.168.20.129", 4022), allow_none=True)
-    server = SimpleXMLRPCServer(("192.168.24.116", 4022), allow_none=True)
+    logger.warn("ai interface starting...")
+    server = SimpleXMLRPCServer(("192.168.20.129", 4022), allow_none=True)
     # server.register_function(gamectrlFunc, "gamectrlFunc")
     server.register_function(get_fly_state, "get_fly_state")
     server.register_function(start, "start")
@@ -24,6 +26,7 @@ def get_fly_state():
 
 # TODO:开局
 def start():
+    logger.info("started...")
     FlyCtrl.start()
 
 # TODO:终止

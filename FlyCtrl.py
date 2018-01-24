@@ -1029,27 +1029,34 @@ def set_command():
         Input = 1
 
 def random_fly():
-    init_time = time.time()
-    time.sleep(2)
-    while (time.time() - init_time) < 10:
-        speedup(430)
-        keep_roll(0)
-        keep_speed_vector(0)
-    init_high = random.normalvariate(13000,1250)
-    random_yaw = random.randint(-45, 45)
-    init_yaw = parsejson_yaw() + (random_yaw*math.pi/180)
-    while abs(init_yaw - parsejson_yaw()) > 0.1*math.pi/ 180:
-        speedup(430)
-        keep_yaw_Va(init_yaw,0.1)
-    init_time = time.time()
-    while (time.time() - init_time) < 10:
-        speedup(430)
-        keep_yaw_Va(init_yaw, 0)
     while True:
-        speedup(430)
-        keep_roll(0)
-        keep_altrad(init_high)
-
+        logger.warn("...waiting for start event...")
+        event_start.wait()
+        logger.warn("...start an episode...")
+        init_time = time.time()
+        time.sleep(2)
+        while (time.time() - init_time) < 10:
+            speedup(430)
+            keep_roll(0)
+            keep_speed_vector(0)
+        init_high = random.normalvariate(13000,1250)
+        random_yaw = random.randint(-45, 45)
+        init_yaw = parsejson_yaw() + (random_yaw*math.pi/180)
+        while abs(init_yaw - parsejson_yaw()) > 0.1*math.pi/ 180:
+            speedup(430)
+            keep_yaw_Va(init_yaw,0.1)
+        init_time = time.time()
+        while (time.time() - init_time) < 10:
+            speedup(430)
+            keep_yaw_Va(init_yaw, 0)
+        while True:
+            speedup(430)
+            keep_roll(0)
+            keep_altrad(init_high)
+            if event_stop.is_set():
+                logger.warn("...stop an episode...")
+                event_stop.clear()
+                break
 
 
 def keep_levelflight():
