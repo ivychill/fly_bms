@@ -311,7 +311,7 @@ def keep_roll(roll):
         if a > 1:
             a = 1
 
-        logger.info('PID：a = %s * e + %s* e_roll_sum + %s* (delta_e)' % (Kp1, Ki1, Kd1))
+        logger.debug('PID：a = %s * e + %s* e_roll_sum + %s* (delta_e)' % (Kp1, Ki1, Kd1))
         logger.debug('比例:%s' % e)
         logger.debug('积分:%s' % e_roll_sum)
         logger.debug('微分:%s' % delta_e)
@@ -1055,7 +1055,6 @@ def random_fly():
                 logger.warn("...stop an episode...")
                 event_stop.clear()
                 break
-
 
 def keep_levelflight():
     global Input,yaw, pitch

@@ -12,6 +12,7 @@ def register_rpc():
     server.register_function(get_fly_state, "get_fly_state")
     server.register_function(start, "start")
     server.register_function(stop, "stop")
+    server.register_function(prepare, "prepare")
     # server.register_function(reboot, "reboot")
     server.serve_forever()  # 启动服务器,并使其对这个连接可用
 
@@ -21,6 +22,7 @@ def get_fly_state():
     speed = FlyCtrl.parsejson_speed()
     pitch = FlyCtrl.parsejson_pitch()
     yaw = FlyCtrl.parsejson_yaw()
+    logger.info("z: %s, speed: %s, pitch: %s, yaw: %s" % (z, speed, pitch, yaw))
 
     return z, speed, pitch, yaw
 
@@ -31,5 +33,8 @@ def start():
 def stop():
     FlyCtrl.stop()
 
-def reboot():
-    FlyCtrl.reboot()
+# def reboot():
+#     FlyCtrl.reboot()
+
+def prepare():
+    FlyCtrl.fly_initialization()
