@@ -990,10 +990,10 @@ def reverse_direction():
 bms_interface = BmsInterface.BmsIf()
 
 def fly_initialization():
+    logger.warn("fly initialization...")
     bms_interface.sendto("x:16383.5")
     bms_interface.sendto("y:16383.5")
     bms_interface.sendto("z:32767")
-    bms_interface.sendto("K:398")
 
 lockcommand=threading.Lock()
 Input =0
@@ -1030,7 +1030,9 @@ def random_fly():
     while True:
         logger.warn("...waiting for start event...")
         event_start.wait()
+        time.sleep(12)
         logger.warn("...start an episode...")
+        # bms_interface.sendto("K:398")
         init_time = time.time()
         time.sleep(2)
         while (time.time() - init_time) < 10:

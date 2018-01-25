@@ -2,6 +2,7 @@
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 import FlyCtrl
+import time
 from my_config import *
 
 def register_rpc():
