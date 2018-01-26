@@ -9,7 +9,7 @@ import random
 from my_config import *
 import xmlrpclib
 
-jiasu =0
+
 
 # 相关参数获取
 
@@ -318,7 +318,7 @@ def keep_roll(roll):
         logger.debug('speed:%s' % parsejson_speed())
         logger.debug('roll:%s' % parsejson_bank())
 
-        command1 = "x" + ":" + str(32767*(a+1)/2)
+        command1 = "x" + ":" + str(32767*(a+1)/2.0)
         bms_interface.sendto(command1)
 
         t_roll = time.time()
@@ -346,7 +346,7 @@ def keep_speed_vector(va):
             a = -1
         if a > 1:
             a = 1
-        command = "y" + ":" + str(32767*(a+1)/2)
+        command = "y" + ":" + str(32767*(a+1)/2.0)
         bms_interface.sendto(command)
         t_va=time.time()
         e_va_last = e
@@ -377,7 +377,6 @@ def keep_pitch(pitch):
 
 #地面高度控制
 def keep_altrad(target_altrad):
-
     e=target_altrad-parsejson_altRad()
     Va_command = (0.35 / 2000) * e
     if Va_command > 0.35:
@@ -461,114 +460,102 @@ t_commandx=time.time()
 t_commandy=time.time()
 move_x=0
 move_y=0
+flag_fire = 0
 t_suoding=time.time()
 def scan_and_lock():
-    global t_commandx,t_commandy,move_x,move_y,t_suoding
-    if parsejson_targetscan()["radar_on"] == False:
-        print "开雷达"
-        bms_interface.sendto("106")
-        bms_interface.sendto("86")
-        time.sleep(0.2)
+    global t_commandx,t_commandy,t_suoding,flag_fire
 
-    a = parsejson_target()
-    b = parsejson_lockedtarget()
+    while 1:
 
+        td_position, num_up, num_down = get_td()
+        enemy_position = get_enemy_coord()
+        print 'td_position:', td_position
+        print 'enemy_position:', enemy_position
+        #
+        # while td_position ==[0,0] or enemy_position ==[0,0]:
+        #     td_position, num_up, num_down = get_td()
+        #     enemy_position = get_enemy_coord()
+        #     # print 'td_position:', td_position
+        #     # print 'enemy_position:', enemy_position
+        #     # print '33'
 
+        if td_position is not None and enemy_position is not None:
+            # td_position, num_up, num_down = get_td()
+            # enemy_position = get_enemy_coord()
+            print 'td_position:', td_position
+            print 'enemy_position:', enemy_position
 
+            # while abs(enemy_position[0]-td_position[0])> 40:
+            if abs(enemy_position[0] - td_position[0]) > 40:
+                if (enemy_position[0]-td_position[0]) > 0:
+                    bms_interface.sendto("K:104")
+                    time.sleep(0.25)
+                else:
+                    bms_interface.sendto("K:103")
+                    time.sleep(0.25)
 
-    if a != [] and b == []:
-        x_position = parsejson_targetscan()["TDC"]['x']
-        y_position = parsejson_targetscan()["TDC"]['y']
-        x_scale = parsejson_targetscan()["scale"]['azimuth']
-        y_scale = parsejson_targetscan()["scale"]['distance']
-
-        my_position = parsejson_selfinfor()['Position']
-        target_position = a[0]['position']['p']
-
-        # 计算与敌机夹角，相对于正北
-        angle = math.pi / 2 - math.atan2((target_position['x'] - my_position['x']),
-                                         (target_position['z'] - my_position['z']))
-        if angle > math.pi:
-            angle = angle - 2 * math.pi
-        if angle < -math.pi:
-            angle = angle + 2 * math.pi
-        if angle < 0:
-            angle = angle + 2 * math.pi
-
-        # 计算敌机相对我机方位
-        target_angle = angle - parsejson_yaw()
-        if target_angle > math.pi:
-            target_angle = target_angle - 2 * math.pi
-        if target_angle < -math.pi:
-            target_angle = target_angle + 2 * math.pi
-
-        enermy_dis = math.sqrt(
-                (target_position['x'] - my_position['x']) ** 2 + (target_position['y'] - my_position['y']) ** 2 + (
-                    target_position['z'] - my_position['z']) ** 2)/y_scale
-        if enermy_dis > 1:
-            enermy_dis =1
-
-        enermy_angle = target_angle / x_scale
-
-
-
-        if abs(enermy_angle-x_position)> 0.2:
-            if (enermy_angle - x_position) > 0:
-                bms_interface.sendto("89")
             else:
-                bms_interface.sendto("88")
-        else:
-            if (enermy_angle - x_position) > 0:
-                if (time.time() - t_commandx) > 0.02:
-                    if move_x == 0:
-                        bms_interface.sendto("89")
-                        move_x = 1
-                    if move_x == 1:
-                        bms_interface.sendto("235")
-                        move_x = 0
-                    t_commandx= time.time()
+                if (enemy_position[0]-td_position[0]) > 0:
+                    # if (time.time() - t_commandx) > 0.02:
+                    #     bms_interface.sendto("K:104")
+                    #     t_commandx= time.time()
+                    bms_interface.sendto("K:104")
+                    time.sleep(0.35)
+                else:
+                    # if (time.time() - t_commandx) > 0.02:
+                    #     bms_interface.sendto("K:103")
+                    #     t_commandx = time.time()
+                    bms_interface.sendto("K:103")
+                    time.sleep(0.35)
+
+
+
+            # while abs(enemy_position[1]-td_position[1])> 40:
+            if abs(enemy_position[1] - td_position[1]) > 40:
+                if (enemy_position[1]-td_position[1]) > 0:
+                    bms_interface.sendto("K:102")
+                    time.sleep(0.25)
+                else:
+                    bms_interface.sendto("K:101")
+                    time.sleep(0.25)
             else:
-                if (time.time() - t_commandx) > 0.02:
-                    if move_x == 0:
-                        bms_interface.sendto("88")
-                        move_x = 1
-                    if move_x == 1:
-                        bms_interface.sendto("235")
-                        move_x = 0
-                    t_commandx = time.time()
+                if (enemy_position[1]-td_position[1]) > 0:
+                    # if (time.time() - t_commandx) > 0.02:
+                    #     bms_interface.sendto("K:102")
+                        # t_commandx= time.time()
+                    bms_interface.sendto("K:102")
+                    time.sleep(0.35)
+                else:
+                    # if (time.time() - t_commandx) > 0.02:
+                    #     bms_interface.sendto("K:101")
+                    #     t_commandx = time.time()
+                    bms_interface.sendto("K:101")
+                    time.sleep(0.35)
 
 
+            dis = math.sqrt((enemy_position[0] - td_position[0]) ** 2 + (enemy_position[1] - td_position[1]) ** 2 )
 
-        if abs(enermy_dis-y_position)>0.2:
-            if (enermy_dis - y_position) > 0:
-                bms_interface.sendto("90")
-            else:
-                bms_interface.sendto("91")
-        else:
-            if (enermy_dis - y_position) > 0:
-                if (time.time() - t_commandy) > 0.02:
-                    if move_y == 0:
-                        bms_interface.sendto("90")
-                        move_y = 1
-                    if move_y == 1:
-                        bms_interface.sendto("235")
-                        move_y = 0
-                    t_commandy = time.time()
-            if (enermy_dis - y_position) <= 0:
-                if (time.time() - t_commandy) > 0.02:
-                    if move_y == 0:
-                        bms_interface.sendto("91")
-                        move_y = 1
-                    if move_y == 1:
-                        bms_interface.sendto("235")
-                        move_y = 0
-                    t_commandy = time.time()
 
-        if abs(enermy_angle - x_position) < 0.1 and (time.time()-t_suoding)>0.2:
-            # print '锁定'
-            bms_interface.sendto("100")
-            bms_interface.sendto("235")
-            t_suoding=time.time()
+            if dis < 30*1.414 :
+                # print '锁定'and (time.time()-t_suoding)>0.2
+                bms_interface.sendto("K:281")
+                # bms_interface.sendto("K:299")
+                # t_suoding=time.time()
+
+        index = get_Index()
+        print 'index: ',index
+        rpi_bar = get_Rpi()
+        print 'rpi_bar: ', rpi_bar
+        rtr_bar = get_Rtr()
+        print 'rtr_bar: ', rtr_bar
+        if ((index > rpi_bar) or (index > rtr_bar)):
+            print '11111'
+            bms_interface.sendto("K:299")
+            # print '2222'
+
+
+            # if index > rtr_bar:
+            #     bms_interface.sendto("K:299")
 
 # add 2018-01-22
 event_start = threading.Event()
@@ -594,10 +581,30 @@ def reboot():
 image_proxy = xmlrpclib.ServerProxy("http://192.168.24.108:5001/")
 
 def get_td():
+    # print '11'
     return image_proxy.get_td()
 
 def get_enemy_coord():
+    # print '22'
     return image_proxy.get_enemy_coord()
+
+def get_Index():
+    # print '33'
+    return image_proxy.get_Index()
+
+
+def get_Ropt():
+
+    return image_proxy.get_Ropt()
+
+def get_Rpi():
+
+    return image_proxy.get_Rpi()
+
+def get_Rtr():
+
+    return image_proxy.get_Rtr()
+
 
 # flag_entrance = False
 flag_break = False
@@ -839,6 +846,9 @@ def s_right(flag_break):
 
 
 def off_set(yaw,va):
+    #敌机在我机位置：delta_yaw = (x - 225)/225.0*60，负在左，正在右
+    #if delta_yaw < 0:向右偏置50-abs(delta_yaw)
+    #else:向左偏置50-abs(delta_yaw)
     if random.randint(0, 9) < 5:
         print "向右偏置"
         target_yaw = yaw + 5*math.pi/18
@@ -996,6 +1006,11 @@ def fly_initialization():
     bms_interface.sendto("y:16383.5")
     bms_interface.sendto("z:32767")
     bms_interface.sendto("K:398")
+    bms_interface.sendto("K:329")
+    bms_interface.sendto("K:164")
+    bms_interface.sendto("K:182")
+
+
 
 lockcommand=threading.Lock()
 Input =0
@@ -1007,8 +1022,8 @@ def set_command():
     while 1:
         # flag = input("输入标识1或2：")
         # a = input("输入横滚角（-180 - 180）：")
-        c = input("输入偏航角（-180 - 180）：")
-        d = input("输入俯仰角（-90 - 90）：")
+        # c = input("输入偏航角（-180 - 180）：")
+        # d = input("输入俯仰角（-90 - 90）：")
         # high = input("输入保持高度（10000-16000）：")
         # t = input("输入平飞时间：")
 
@@ -1018,11 +1033,11 @@ def set_command():
         # print speed_vector()
         # roll = (a / 180.0) * math.pi
         # print 'roll:', 180 * parsejson_bank() / math.pi
-        yaw = (c / 180.0) * math.pi
-        print 'yaw:', 180 * parsejson_yaw() / math.pi
-        va = (d / 180.0) * math.pi
-        print 'va:', 180 * speed_vector() / math.pi
-        print '速度：', parsejson_speed()
+        # yaw = (c / 180.0) * math.pi
+        # print 'yaw:', 180 * parsejson_yaw() / math.pi
+        # va = (d / 180.0) * math.pi
+        # print 'va:', 180 * speed_vector() / math.pi
+        # print '速度：', parsejson_speed()
         # print '实际高度:',parsejson_altRad()
         # print '微分:', delta_e
         lockcommand.release()
@@ -1071,16 +1086,17 @@ def keep_levelflight():
 
 def fly_test():
     global Input,yaw, pitch
-    thread_console = threading.Thread(target = set_command)
-    thread_console.start()
+    # thread_console = threading.Thread(target = set_command)
+    # thread_console.start()
     while 1:
-        while Input:
+        while 1:
+            # print '11'
             # lockcommand.acquire()
             speedup(430)
             # UdpClient.sendto("z:0")
             # print '速度：', parsejson_speed()
             # keep_pitch(pitch)
-            keep_yaw_Va(yaw,va)
+            # keep_yaw_Va(yaw,va)
             # print pitch
             # keep_roll(roll)
             # keep_speed_vector(va)
@@ -1090,6 +1106,10 @@ def fly_test():
             # s_left(0)
             # s_right(0)
             # keep_levelflight()
+            keep_roll(0)
+            keep_altrad(14000)
+            # scan_and_lock()
+
 
 def initFlyCtrl():
     t2 = threading.Thread(target=fly_test)
