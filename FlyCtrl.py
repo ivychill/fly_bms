@@ -1049,6 +1049,7 @@ def set_command():
 def random_fly():
     while True:
         logger.warn("...waiting for start event...")
+        joystick_initialization()
         event_start.wait()
         time.sleep(12)
         logger.warn("...start an episode...")
