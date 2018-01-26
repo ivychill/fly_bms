@@ -14,7 +14,7 @@ class BmsIf:
         self.config_obj = Config.singleton()
         self.init_udp_server()
         self.init_udp_client()
-        self.init_bms_control()
+        # self.init_bms_control()
 
     # udp server用于从bms接收
     def init_udp_server(self):
@@ -42,10 +42,10 @@ class BmsIf:
     def sendto(self, command):
         self.bms_action_sock.sendto(command, self.bms_action_addr)
 
-    # rpc用于bms的启停
-    def init_bms_control(self):
-        self.bms_control_proxy = xmlrpclib.ServerProxy(self.config_obj.config.get("RemoteRPCServer", "HTTP"))
-
-    # 1: start; 2: stop; 3: reboot
-    def send_ctrl_cmd(self, cmd):
-        self.bms_control_proxy.RPCserverForGameserver(cmd)
+    # # rpc用于bms的启停
+    # def init_bms_control(self):
+    #     self.bms_control_proxy = xmlrpclib.ServerProxy(self.config_obj.config.get("RemoteRPCServer", "HTTP"))
+    #
+    # # 1: start; 2: stop; 3: reboot
+    # def send_ctrl_cmd(self, cmd):
+    #     self.bms_control_proxy.RPCserverForGameserver(cmd)

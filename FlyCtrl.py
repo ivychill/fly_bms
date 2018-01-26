@@ -311,7 +311,7 @@ def keep_roll(roll):
         if a > 1:
             a = 1
 
-        logger.info('PID：a = %s * e + %s* e_roll_sum + %s* (delta_e)' % (Kp1, Ki1, Kd1))
+        logger.debug('PID：a = %s * e + %s* e_roll_sum + %s* (delta_e)' % (Kp1, Ki1, Kd1))
         logger.debug('比例:%s' % e)
         logger.debug('积分:%s' % e_roll_sum)
         logger.debug('微分:%s' % delta_e)
@@ -562,21 +562,19 @@ event_start = threading.Event()
 event_stop = threading.Event()
 
 def start():
-    logger.info("send bms ctrl cmd start...")
-    bms_interface.send_ctrl_cmd('1')
-    logger.info("bms started...")
+    logger.info("set event start...")
+    # bms_interface.send_ctrl_cmd('1')
     event_start.set()
 
 def stop():
     event_stop.set()
-    logger.info("send bms ctrl cmd stop...")
-    bms_interface.send_ctrl_cmd('2')
-    logger.info("bms stopped...")
+    logger.info("set event stop...")
+    # bms_interface.send_ctrl_cmd('2')
 
-def reboot():
-    logger.info("send bms ctrl cmd reboot...")
-    bms_interface.send_ctrl_cmd('3')
-    logger.info("bms rebooted...")
+# def reboot():
+#     logger.info("send bms ctrl cmd reboot...")
+#     bms_interface.send_ctrl_cmd('3')
+#     logger.info("bms rebooted...")
 
 image_proxy = xmlrpclib.ServerProxy("http://192.168.24.108:5001/")
 
@@ -1001,10 +999,14 @@ def reverse_direction():
 
 bms_interface = BmsInterface.BmsIf()
 
-def fly_initialization():
+def joystick_initialization():
+    logger.warn("fly initialization...")
     bms_interface.sendto("x:16383.5")
     bms_interface.sendto("y:16383.5")
     bms_interface.sendto("z:32767")
+
+
+def fly_initialization():
     bms_interface.sendto("K:398")
     bms_interface.sendto("K:329")
     bms_interface.sendto("K:164")
@@ -1045,28 +1047,36 @@ def set_command():
 
 ##随机飞行
 def random_fly():
-    init_time = time.time()
-    time.sleep(2)
-    while (time.time() - init_time) < 10:
-        speedup(430)
-        keep_roll(0)
-        keep_speed_vector(0)
-    init_high = random.normalvariate(13000,1250)
-    random_yaw = random.randint(-45, 45)
-    init_yaw = parsejson_yaw() + (random_yaw*math.pi/180)
-    while abs(init_yaw - parsejson_yaw()) > 0.1*math.pi/ 180:
-        speedup(430)
-        keep_yaw_Va(init_yaw,0.1)
-    init_time = time.time()
-    while (time.time() - init_time) < 10:
-        speedup(430)
-        keep_yaw_Va(init_yaw, 0)
     while True:
-        speedup(430)
-        keep_roll(0)
-        keep_altrad(init_high)
-
-
+        logger.warn("...waiting for start event...")
+        event_start.wait()
+        time.sleep(12)
+        logger.warn("...start an episode...")
+        # bms_interface.sendto("K:398")
+        init_time = time.time()
+        time.sleep(2)
+        while (time.time() - init_time) < 10:
+            speedup(430)
+            keep_roll(0)
+            keep_speed_vector(0)
+        init_high = random.normalvariate(13000,1250)
+        random_yaw = random.randint(-45, 45)
+        init_yaw = parsejson_yaw() + (random_yaw*math.pi/180)
+        while abs(init_yaw - parsejson_yaw()) > 0.1*math.pi/ 180:
+            speedup(430)
+            keep_yaw_Va(init_yaw,0.1)
+        init_time = time.time()
+        while (time.time() - init_time) < 10:
+            speedup(430)
+            keep_yaw_Va(init_yaw, 0)
+        while True:
+            speedup(430)
+            keep_roll(0)
+            keep_altrad(init_high)
+            if event_stop.is_set():
+                logger.warn("...stop an episode...")
+                event_stop.clear()
+                break
 
 def keep_levelflight():
     global Input,yaw, pitch
