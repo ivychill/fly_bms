@@ -1100,19 +1100,20 @@ def set_command():
 def random_fly():
     while True:
         logger.warn("...waiting for start event...")
+        joystick_initialization()
         event_start.wait()
-        time.sleep(12)
+        time.sleep(16)
         logger.warn("...start an episode...")
         # bms_interface.sendto("K:398")
         init_time = time.time()
-        time.sleep(2)
-        while (time.time() - init_time) < 10:
+        while (time.time() - init_time) < 8:
             speedup(430)
             keep_roll(0)
-            keep_speed_vector(0)
+            keep_speed_vector(0.15)
         init_high = random.normalvariate(13000,1250)
         random_yaw = random.randint(-45, 45)
         init_yaw = parsejson_yaw() + (random_yaw*math.pi/180)
+        # logger.debug("init_high: %s,init_yaw: %s" %(init_high,init_yaw))
         while abs(init_yaw - parsejson_yaw()) > 0.1*math.pi/ 180:
             speedup(430)
             keep_yaw_Va(init_yaw,0.1)
