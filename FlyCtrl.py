@@ -406,7 +406,7 @@ def speedup(speed):
         bms_interface.sendto("z:0")
         jiali=1
     if parsejson_speed() > speed and jiali==1:
-        bms_interface.sendto("z:16537")
+        bms_interface.sendto("z:21000")   #16537
         jiali=0
 
 
@@ -460,17 +460,20 @@ t_commandx=time.time()
 t_commandy=time.time()
 move_x=0
 move_y=0
-flag_fire = 0
+fire_flag = 0
 t_suoding=time.time()
+#if abs>40
+fire_event = threading.Event()
 def scan_and_lock():
-    global t_commandx,t_commandy,t_suoding,flag_fire
+    global t_commandx,t_commandy,t_suoding,fire_flag
 
     while 1:
 
-        td_position, num_up, num_down = get_td()
+        td_position = get_td()
         enemy_position = get_enemy_coord()
+        time.sleep(0.1)
         print 'td_position:', td_position
-        print 'enemy_position:', enemy_position
+        # print 'enemy_position:', enemy_position
         #
         # while td_position ==[0,0] or enemy_position ==[0,0]:
         #     td_position, num_up, num_down = get_td()
@@ -482,8 +485,8 @@ def scan_and_lock():
         if td_position is not None and enemy_position is not None:
             # td_position, num_up, num_down = get_td()
             # enemy_position = get_enemy_coord()
-            print 'td_position:', td_position
-            print 'enemy_position:', enemy_position
+            # print 'td_position:', td_position
+            # print 'enemy_position:', enemy_position
 
             # while abs(enemy_position[0]-td_position[0])> 40:
             if abs(enemy_position[0] - td_position[0]) > 40:
@@ -543,14 +546,18 @@ def scan_and_lock():
                 # t_suoding=time.time()
 
         index = get_Index()
-        print 'index: ',index
+        print 'index_fire: ',index
         rpi_bar = get_Rpi()
-        print 'rpi_bar: ', rpi_bar
+        print 'rpi_bar_fire: ', rpi_bar
         rtr_bar = get_Rtr()
-        print 'rtr_bar: ', rtr_bar
-        if ((index > rpi_bar) or (index > rtr_bar)):
-            print '11111'
-            bms_interface.sendto("K:299")
+        print 'rtr_bar_fire: ', rtr_bar
+        if index is not None and rpi_bar is not None and rtr_bar is not None:
+            if (fire_flag ==0) and ((index > rpi_bar) or (index > rtr_bar)):
+                print '11111'
+                fire_flag = 1
+                bms_interface.sendto("K:299")
+                fire_event.set()
+
             # print '2222'
 
 
@@ -577,31 +584,60 @@ def stop():
 #     logger.info("bms rebooted...")
 
 image_proxy = xmlrpclib.ServerProxy("http://192.168.24.108:5001/")
+image_proxy_lock = xmlrpclib.ServerProxy("http://192.168.24.108:5001/")
 
+##scan_and_lock
 def get_td():
-    # print '11'
-    return image_proxy.get_td()
+    print '11'
+    td =image_proxy_lock.get_td()
+    print td
+    return td
 
 def get_enemy_coord():
-    # print '22'
-    return image_proxy.get_enemy_coord()
+    print '22'
+    return image_proxy_lock.get_enemy_coord()
 
 def get_Index():
-    # print '33'
-    return image_proxy.get_Index()
+    print '33'
+    return image_proxy_lock.get_Index()
 
 
 def get_Ropt():
 
-    return image_proxy.get_Ropt()
+    return image_proxy_lock.get_Ropt()
 
 def get_Rpi():
 
-    return image_proxy.get_Rpi()
+    return image_proxy_lock.get_Rpi()
 
 def get_Rtr():
 
-    return image_proxy.get_Rtr()
+    return image_proxy_lock.get_Rtr()
+
+##fly
+
+def get_miss_clock():
+
+    return image_proxy.get_miss_clock()
+#
+# def get_Index():
+#     # print '33'
+#     return image_proxy.get_Index()
+#
+#
+# def get_Ropt():
+#
+#     return image_proxy.get_Ropt()
+#
+# def get_Rpi():
+#
+#     return image_proxy.get_Rpi()
+#
+# def get_Rtr():
+#
+#     return image_proxy.get_Rtr()
+
+
 
 
 # flag_entrance = False
@@ -1001,16 +1037,31 @@ bms_interface = BmsInterface.BmsIf()
 
 def joystick_initialization():
     logger.warn("fly initialization...")
-    bms_interface.sendto("x:16383.5")
-    bms_interface.sendto("y:16383.5")
-    bms_interface.sendto("z:32767")
+    bms_interface.sendto("x:16383")
+    time.sleep(0.5)
+    bms_interface.sendto("y:16383")
+    time.sleep(0.5)
+    bms_interface.sendto("z:32766")
+    time.sleep(0.5)
 
 
 def fly_initialization():
-    bms_interface.sendto("K:398")
-    bms_interface.sendto("K:329")
-    bms_interface.sendto("K:164")
-    bms_interface.sendto("K:182")
+    # bms_interface.sendto("K:46")    # Toggle exterior lighting
+    # bms_interface.sendto("K:398")   # View: HUD only
+    bms_interface.sendto("K:329")   # Switch to next waypoint(matchplay mode, remove waypoint symbol on LMFD)
+    # time.sleep(0.1)
+    bms_interface.sendto("K:158")
+    bms_interface.sendto("K:171")
+    # time.sleep(0.1)
+    bms_interface.sendto("K:171")
+    bms_interface.sendto("K:171")
+    bms_interface.sendto("K:158")
+    # time.sleep(0.1)
+    bms_interface.sendto("K:164")   # LMFD: OSB11--cleanse LMFD
+    bms_interface.sendto("K:182")   # clear LMFD field
+    bms_interface.sendto("K:288")
+    bms_interface.sendto("K:250")
+    bms_interface.sendto("K:250")
 
 
 
@@ -1095,7 +1146,10 @@ def keep_levelflight():
             # bms_interface.sendto("y:16383.5")
 
 def fly_test():
-    global Input,yaw, pitch
+    global Input,pitch
+    yaw = parsejson_yaw()
+    nose_up_flag = 0
+    # fire_flag = 0
     # thread_console = threading.Thread(target = set_command)
     # thread_console.start()
     while 1:
@@ -1116,8 +1170,34 @@ def fly_test():
             # s_left(0)
             # s_right(0)
             # keep_levelflight()
-            keep_roll(0)
-            keep_altrad(14000)
+            miss_clock_digit, fcr_nose_up = get_miss_clock()
+            if (fcr_nose_up is not None):
+                nose_up_flag = 1
+                nose_up = math.pi*int(float(fcr_nose_up))/180.0
+                print 'nose_up: ', nose_up
+                keep_speed_vector(nose_up)
+                print 'speed_vector: ', speed_vector()
+            else:
+                if (nose_up_flag == 1):
+                    # print 'nose_up_flag == 1'
+                    keep_speed_vector(nose_up)
+                else:
+                    # print 'fly1112344'
+                    keep_roll(0)
+                    keep_yaw_Va(yaw, 0)
+                    keep_speed_vector(0)
+            if fire_flag == 1:
+                # print 'fire1241'
+                keep_roll(0)
+                keep_yaw_Va(yaw, 0)
+                keep_speed_vector(0)
+                nose_up_flag = 0
+
+            if miss_clock_digit is not None:
+                keep_roll(0)
+                keep_yaw_Va(yaw, 0.0)
+                keep_speed_vector(0)
+            # keep_altrad(14000)
             # scan_and_lock()
 
 
