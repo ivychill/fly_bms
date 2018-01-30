@@ -2,7 +2,7 @@
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 import FlyCtrl
-import time
+import flight_bit
 from my_config import *
 
 def register_rpc():
@@ -13,6 +13,7 @@ def register_rpc():
     server.register_function(get_fly_state, "get_fly_state")
     server.register_function(start, "start")
     server.register_function(stop, "stop")
+    server.register_function(is_dead, "is_dead")
     # server.register_function(prepare, "prepare")
     # server.register_function(reboot, "reboot")
     server.serve_forever()  # 启动服务器,并使其对这个连接可用
@@ -33,6 +34,9 @@ def start():
 
 def stop():
     FlyCtrl.stop()
+
+def is_dead():
+    return flight_bit.is_dead()
 
 # def reboot():
 #     FlyCtrl.reboot()

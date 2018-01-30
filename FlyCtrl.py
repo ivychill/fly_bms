@@ -399,15 +399,12 @@ def keep_altbar(target_altbar):
     keep_pitch(pitch_command)
 
 #加速控制
-jiali=0
 def speedup(speed):
-    global jiali
-    if parsejson_speed() < speed-10 and jiali==0:
+    if parsejson_speed() < speed-10:
         bms_interface.sendto("z:0")
-        jiali=1
-    if parsejson_speed() > speed and jiali==1:
+    if parsejson_speed() > speed :
         bms_interface.sendto("z:21000")   #16537
-        jiali=0
+
 
 
 
@@ -1100,16 +1097,24 @@ def set_command():
 def random_fly():
     while True:
         logger.warn("...waiting for start event...")
-        joystick_initialization()
+        # 回中改由控制程序执行
+        # joystick_initialization()
         event_start.wait()
         time.sleep(16)
         logger.warn("...start an episode...")
         # bms_interface.sendto("K:398")
-        init_time = time.time()
-        while (time.time() - init_time) < 8:
+        # init_time = time.time()
+        # clean mfd
+        bms_interface.sendto("K:164")
+        bms_interface.sendto("K:329")
+        index=0
+        while index < 8:
             speedup(430)
+            time.sleep(1)
             keep_roll(0)
-            keep_speed_vector(0.15)
+            time.sleep(1)
+            keep_speed_vector(0)
+            index = index + 1
         init_high = random.normalvariate(13000,1250)
         random_yaw = random.randint(-45, 45)
         init_yaw = parsejson_yaw() + (random_yaw*math.pi/180)
